@@ -1,6 +1,7 @@
 package main
 
 import "vendor:glfw"
+import "vendor:OpenGL"
 
 import "engine/renderer"
 
@@ -18,7 +19,10 @@ CreateWindow :: proc(title : cstring, width, height : i32) -> glfw.WindowHandle 
     glfw.MakeContextCurrent(window)
     glfw.SwapInterval(1)
 
-    renderer.Init(window)
+    OpenGL.load_up_to(3, 3, glfw.gl_set_proc_address)
+
+    width, height := glfw.GetFramebufferSize(window)
+    renderer.Init(width, height)
 
     return window
 }

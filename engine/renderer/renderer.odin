@@ -1,10 +1,8 @@
 package renderer
 
 import "core:math/rand"
-import "vendor:glfw"
 import "vendor:OpenGL"
 
-WindowHandle : glfw.WindowHandle
 VBO, VAO     : u32
 Program      : u32
 
@@ -14,13 +12,7 @@ Triangle : [3 * 3] f32 = {
      0.0,  0.5, 0.0,
 }
 
-Init :: proc(window_handle : glfw.WindowHandle) {
-    ok : bool
-
-    OpenGL.load_up_to(3, 3, glfw.gl_set_proc_address)
-
-    WindowHandle = window_handle
-    width, height := glfw.GetFramebufferSize(WindowHandle)
+Init :: proc(width, height : i32) {
     RefreshViewport(width, height)
 
     OpenGL.GenBuffers(1, &VBO)
@@ -35,6 +27,7 @@ Init :: proc(window_handle : glfw.WindowHandle) {
     OpenGL.EnableVertexAttribArray(0)
 
     // shaders
+    ok : bool
     vertex_shader := string(#load("../../temp/vertex.glsl"))
     fragment_shader := string(#load("../../temp/fragment.glsl"))
     Program, ok = OpenGL.load_shaders_source(vertex_shader, fragment_shader)
