@@ -5,11 +5,12 @@ import "core:math/rand"
 import "vendor:OpenGL"
 
 import Camera "camera"
+import Shader "shader"
 
 VBO, VAO     : u32
-Program      : u32
+main_shader  : Shader.Shader
 
-Triangle : [3 * 3] f32 = {
+triangle : [3 * 3] f32 = {
     -0.5, -0.5, 0.0,
      0.5, -0.5, 0.0,
      0.0,  0.5, 0.0,
@@ -27,16 +28,11 @@ Init :: proc(width, height : i32) {
     OpenGL.EnableVertexAttribArray(0)
     OpenGL.VertexAttribPointer(0, 3, OpenGL.FLOAT, false, 3 * size_of(f32), 0)
 
-    // shaders
-    ok : bool
-    vertex_shader := string(#load("shaders/vertex.glsl"))
-    fragment_shader := string(#load("shaders/fragment.glsl"))
-    Program, ok = OpenGL.load_shaders_source(vertex_shader, fragment_shader)
-    assert(ok, "Failed to load and compile shaders.")
-    OpenGL.UseProgram(Program)
+    // shader
+    main_shader = Shader.Init()
 
     // vertex data
-    OpenGL.BufferData(OpenGL.ARRAY_BUFFER, size_of(Triangle), &Triangle, OpenGL.STATIC_DRAW)
+    OpenGL.BufferData(OpenGL.ARRAY_BUFFER, size_of(triangle), &triangle, OpenGL.STATIC_DRAW)
 
     // camera
     camera := Camera.Init(- (4 / 3), 4 / 3, -1, 1)
@@ -45,7 +41,7 @@ Init :: proc(width, height : i32) {
 
     // apply projection matrix
     vp_matrix := camera->get_vp_matrix()
-    uniform_location := OpenGL.GetUniformLocation(Program, "u_projection")
+    uniform_location := OpenGL.GetUniformLocation(main_shader.program, "u_projection")
     OpenGL.UniformMatrix4fv(uniform_location, 1, false, &vp_matrix[0][0])
 }
 
@@ -56,10 +52,10 @@ Render :: proc() {
 }
 
 Destroy :: proc() {
+    Shader.Destroy(&main_shader)
     OpenGL.DeleteBuffers(1, &VBO)
     OpenGL.DeleteBuffers(1, &VAO)
     OpenGL.DeleteVertexArrays(1, &VAO)
-    OpenGL.DeleteProgram(Program)
 }
 
 RefreshViewport :: proc "contextless" (width, height : i32) {
