@@ -7,6 +7,7 @@ import "vendor:OpenGL"
 import Camera "camera"
 import Shader "shader"
 
+// TODO: struct (OOP)
 VBO, VAO     : u32
 main_shader  : Shader.Shader
 
@@ -45,12 +46,6 @@ Init :: proc(width, height : i32) {
     OpenGL.UniformMatrix4fv(uniform_location, 1, false, &vp_matrix[0][0])
 }
 
-Render :: proc() {
-    OpenGL.ClearColor(rand.float32(), rand.float32(), rand.float32(), 1.0)
-    OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
-    OpenGL.DrawArrays(OpenGL.TRIANGLES, 0, 3)
-}
-
 Destroy :: proc() {
     Shader.Destroy(&main_shader)
     OpenGL.DeleteBuffers(1, &VBO)
@@ -60,4 +55,10 @@ Destroy :: proc() {
 
 RefreshViewport :: proc "contextless" (width, height : i32) {
     OpenGL.Viewport(0, 0, width, height)
+}
+
+Render :: proc() {
+    OpenGL.ClearColor(rand.float32(), rand.float32(), rand.float32(), 1.0)
+    OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
+    OpenGL.DrawArrays(OpenGL.TRIANGLES, 0, 3)
 }
