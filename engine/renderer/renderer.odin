@@ -1,7 +1,10 @@
 package renderer
 
+import "core:fmt"
 import "core:math/rand"
 import "vendor:OpenGL"
+
+import Camera "camera"
 
 VBO, VAO     : u32
 Program      : u32
@@ -15,6 +18,7 @@ Triangle : [3 * 3] f32 = {
 Init :: proc(width, height : i32) {
     RefreshViewport(width, height)
 
+    // opengl setup
     OpenGL.GenBuffers(1, &VBO)
     OpenGL.BindBuffer(OpenGL.ARRAY_BUFFER, VBO)
 
@@ -28,12 +32,21 @@ Init :: proc(width, height : i32) {
 
     // shaders
     ok : bool
-    vertex_shader := string(#load("../../temp/vertex.glsl"))
-    fragment_shader := string(#load("../../temp/fragment.glsl"))
+    vertex_shader := string(#load("shaders/vertex.glsl"))
+    fragment_shader := string(#load("shaders/fragment.glsl"))
     Program, ok = OpenGL.load_shaders_source(vertex_shader, fragment_shader)
     assert(ok, "Failed to load and compile shaders.")
-
     OpenGL.UseProgram(Program)
+
+    // camera
+    camera := Camera.Init(- (4 / 3), 4 / 3, -1, 1)
+    camera->set_position({0.5, 0.5, 0})
+    camera->set_rotation(0.1)
+
+    // apply projection matrix
+    vp_matrix := camera->get_vp_matrix()
+    uniform_location := OpenGL.GetUniformLocation(Program, "u_projection")
+    OpenGL.UniformMatrix4fv(uniform_location, 1, false, &vp_matrix[0][0])
 }
 
 Render :: proc() {
