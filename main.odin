@@ -1,6 +1,6 @@
 package main
 
-import Window "engine/window"
+import Window "window"
 
 main :: proc() {
     Window.Init("Lakshimi", 1024, 768)
