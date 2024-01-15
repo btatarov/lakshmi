@@ -3,7 +3,7 @@ package window
 import "vendor:glfw"
 import "vendor:OpenGL"
 
-import "../renderer"
+import Renderer "../renderer"
 
 OPENGL_VERSION_MAJOR :: 3
 OPENGL_VERSION_MINOR :: 3
@@ -31,18 +31,18 @@ Init :: proc(title : cstring, width, height : i32) {
 
     width, height := glfw.GetFramebufferSize(window)
 
-    renderer.Init(width, height)
+    Renderer.Init(width, height)
 }
 
 Destroy :: proc() {
-    renderer.Destroy()
+    Renderer.Destroy()
 
     glfw.DestroyWindow(window)
     glfw.Terminate()
 }
 
 OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : i32) {
-    renderer.RefreshViewport(width, height)
+    Renderer.RefreshViewport(width, height)
 }
 
 OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, action, mode : i32) {
@@ -53,7 +53,7 @@ OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, actio
 
 MainLoop :: proc() {
     for ! glfw.WindowShouldClose(window) {
-        renderer.Render()
+        Renderer.Render()
         glfw.PollEvents()
         glfw.SwapBuffers(window)
     }
