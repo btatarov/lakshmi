@@ -24,11 +24,8 @@ Init :: proc(width, height : i32) {
 
     OpenGL.GenVertexArrays(1, &VAO)
     OpenGL.BindVertexArray(VAO)
-    OpenGL.BindBuffer(OpenGL.ARRAY_BUFFER, VBO)
-
-    OpenGL.BufferData(OpenGL.ARRAY_BUFFER, size_of(Triangle), &Triangle, OpenGL.STATIC_DRAW)
-    OpenGL.VertexAttribPointer(0, 3, OpenGL.FLOAT, false, 3 * size_of(f32), 0)
     OpenGL.EnableVertexAttribArray(0)
+    OpenGL.VertexAttribPointer(0, 3, OpenGL.FLOAT, false, 3 * size_of(f32), 0)
 
     // shaders
     ok : bool
@@ -37,6 +34,9 @@ Init :: proc(width, height : i32) {
     Program, ok = OpenGL.load_shaders_source(vertex_shader, fragment_shader)
     assert(ok, "Failed to load and compile shaders.")
     OpenGL.UseProgram(Program)
+
+    // vertex data
+    OpenGL.BufferData(OpenGL.ARRAY_BUFFER, size_of(Triangle), &Triangle, OpenGL.STATIC_DRAW)
 
     // camera
     camera := Camera.Init(- (4 / 3), 4 / 3, -1, 1)
