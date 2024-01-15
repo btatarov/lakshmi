@@ -1,5 +1,6 @@
 package camera
 
+import "core:math"
 import "core:math/linalg"
 
 Camera :: struct {
@@ -70,7 +71,7 @@ camera_set_rotation :: proc(camera: ^Camera, rotation: f32) {
 
 camera_update_view_matrix :: proc(camera: ^Camera) {
     transform := linalg.matrix4_translate(camera.position)
-    transform *= linalg.matrix4_rotate(camera.rotation, linalg.Vector3f32{0, 0, 1})
+    transform *= linalg.matrix4_rotate(math.to_radians(camera.rotation), linalg.Vector3f32{0, 0, 1})
 
     camera.view = linalg.matrix4_inverse(transform)
     camera.vp = camera.projection * camera.view

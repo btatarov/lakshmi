@@ -41,7 +41,7 @@ Init :: proc(width, height : i32) {
     // camera
     camera := Camera.Init(- (4 / 3), 4 / 3, -1, 1)
     camera->set_position({0.5, 0.5, 0})
-    camera->set_rotation(0.1)
+    camera->set_rotation(30)
 
     // apply projection matrix
     vp_matrix := camera->get_vp_matrix()
