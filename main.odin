@@ -1,10 +1,16 @@
 package main
 
+import "core:os"
+
+import Lua "lua"
 import Window "window"
 
 main :: proc() {
-    Window.Init("Lakshimi", 1024, 768)
-    defer Window.Destroy()
+    Lua.Init()
+    Lua.Run(os.args[1:])
+    defer Lua.Destroy()
 
+    Window.Init("Lakshimi", 1024, 768)
     Window.MainLoop()
+    defer Window.Destroy()
 }
