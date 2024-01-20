@@ -60,7 +60,7 @@ Destroy :: proc() {
     OpenGL.DeleteVertexArrays(1, &VAO)
 }
 
-RefreshViewport :: proc "contextless" (width, height : i32) {
+RefreshViewport :: proc(width, height : i32) {
     OpenGL.Viewport(0, 0, width, height)
 }
 

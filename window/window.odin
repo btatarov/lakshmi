@@ -72,6 +72,8 @@ MainLoop :: proc() {
 }
 
 OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : i32) {
+    context = runtime.default_context()
+
     Renderer.RefreshViewport(width, height)
 }
 
