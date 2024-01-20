@@ -1,7 +1,6 @@
 package renderer
 
 import "core:fmt"
-import "core:math/rand"
 import "vendor:OpenGL"
 
 import IndexBuffer "buffers/index"
@@ -66,7 +65,7 @@ RefreshViewport :: proc "contextless" (width, height : i32) {
 }
 
 Render :: proc() {
-    OpenGL.ClearColor(rand.float32(), rand.float32(), rand.float32(), 1.0)
+    OpenGL.ClearColor(0.3, 0.3, 0.3, 1.0)
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
     OpenGL.BindVertexArray(VAO)

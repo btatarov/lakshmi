@@ -1,2 +1,2 @@
 print('Hello, 世界')
--- a = 1 + 13bvb
+LakshimiWindow.open('Lakshimi', 1024, 768)

@@ -1,6 +1,10 @@
 package window
 
+import "core:fmt"
+import "core:runtime"
+
 import "vendor:glfw"
+import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 
 import Renderer "../renderer"
@@ -8,10 +12,11 @@ import Renderer "../renderer"
 OPENGL_VERSION_MAJOR :: 3
 OPENGL_VERSION_MINOR :: 3
 
-// TODO: struct (OOP)
 window : glfw.WindowHandle
 
 Init :: proc(title : cstring, width, height : i32) {
+    fmt.println("LakshimiWindow: Init")
+
     assert(bool(glfw.Init()), "GLFW init failed")
 
     glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR)
@@ -35,10 +40,35 @@ Init :: proc(title : cstring, width, height : i32) {
 }
 
 Destroy :: proc() {
+    fmt.println("LakshimiWindow: Destroy")
     Renderer.Destroy()
 
     glfw.DestroyWindow(window)
     glfw.Terminate()
+}
+
+LuaBind :: proc(L: ^lua.State) {
+    reg_table: []lua.L_Reg = {
+        { "open", _open },
+    }
+
+    lua.newtable(L)
+    lua.pushvalue(L, lua.gettop(L))
+    lua.setglobal(L, "LakshimiWindow")
+    lua.L_setfuncs(L, raw_data(reg_table[:]), 0)
+}
+
+LuaUnbind :: proc(L: ^lua.State) {
+    Destroy()
+}
+
+MainLoop :: proc() {
+    fmt.println("LakshimiWindow: MainLoop")
+    for ! glfw.WindowShouldClose(window) {
+        Renderer.Render()
+        glfw.PollEvents()
+        glfw.SwapBuffers(window)
+    }
 }
 
 OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : i32) {
@@ -51,10 +81,14 @@ OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, actio
     }
 }
 
-MainLoop :: proc() {
-    for ! glfw.WindowShouldClose(window) {
-        Renderer.Render()
-        glfw.PollEvents()
-        glfw.SwapBuffers(window)
-    }
+_open :: proc "c" (L: ^lua.State) -> i32 {
+    context = runtime.default_context()
+
+    title := lua.L_checkstring(L, 1)
+    width := i32(lua.L_checkinteger(L, 2))
+    height := i32(lua.L_checkinteger(L, 3))
+    Init(title, width, height)
+    MainLoop()
+
+    return 0
 }
