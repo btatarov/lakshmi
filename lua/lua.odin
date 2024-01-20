@@ -35,7 +35,8 @@ Run :: proc(L: ^lua.State, args: []string) -> bool {
     if len(args) < 1 {
         CheckOK(L, lua.L_loadfile(L, "main.lua")) or_return
     } else {
-        CheckOK(L, lua.L_loadfile(L, strings.clone_to_cstring(args[0]))) or_return
+        c_file := strings.clone_to_cstring(args[0], context.temp_allocator)
+        CheckOK(L, lua.L_loadfile(L, c_file)) or_return
     }
 
     status := lua.pcall(L, 0, 0, 0)

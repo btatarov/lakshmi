@@ -49,7 +49,7 @@ Destroy :: proc() {
 }
 
 LuaBind :: proc(L: ^lua.State) {
-    reg_table: []lua.L_Reg = {
+    @static reg_table: []lua.L_Reg = {
         { "open", _open },
     }
     LuaRuntime.BindSingleton(L, "LakshimiWindow", &reg_table)
@@ -63,8 +63,11 @@ MainLoop :: proc() {
     fmt.println("LakshimiWindow: MainLoop")
     for ! glfw.WindowShouldClose(window) {
         Renderer.Render()
+
         glfw.PollEvents()
         glfw.SwapBuffers(window)
+
+        free_all(context.temp_allocator)
     }
 }
 
