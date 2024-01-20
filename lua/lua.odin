@@ -11,6 +11,14 @@ Init :: proc() -> (L: ^lua.State) {
     return
 }
 
+BindSingleton :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg) {
+    // TODO: const fields, e.g. LakshimiWindow.ON_CLOSE
+    lua.newtable(L)
+    lua.pushvalue(L, lua.gettop(L))
+    lua.setglobal(L, name)
+    lua.L_setfuncs(L, raw_data(reg_table[:]), 0)
+}
+
 CheckOK :: proc(L: ^lua.State, status: lua.Status) -> bool {
     if status != lua.OK {
         fmt.println(lua.tostring(L, -1))

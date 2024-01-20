@@ -7,6 +7,7 @@ import "vendor:glfw"
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 
+import LuaRuntime "../lua"
 import Renderer "../renderer"
 
 OPENGL_VERSION_MAJOR :: 3
@@ -51,11 +52,7 @@ LuaBind :: proc(L: ^lua.State) {
     reg_table: []lua.L_Reg = {
         { "open", _open },
     }
-
-    lua.newtable(L)
-    lua.pushvalue(L, lua.gettop(L))
-    lua.setglobal(L, "LakshimiWindow")
-    lua.L_setfuncs(L, raw_data(reg_table[:]), 0)
+    LuaRuntime.BindSingleton(L, "LakshimiWindow", &reg_table)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
