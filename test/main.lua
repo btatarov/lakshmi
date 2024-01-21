@@ -1,2 +1,2 @@
 print('Hello, 世界')
-LakshimiWindow.open('Lakshimi', 1024, 768)
+LakshmiWindow.open('Lakshmi', 1024, 768)

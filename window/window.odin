@@ -16,7 +16,7 @@ OPENGL_VERSION_MINOR :: 3
 window : glfw.WindowHandle
 
 Init :: proc(title : cstring, width, height : i32) {
-    fmt.println("LakshimiWindow: Init")
+    fmt.println("LakshmiWindow: Init")
 
     assert(bool(glfw.Init()), "GLFW init failed")
 
@@ -41,7 +41,7 @@ Init :: proc(title : cstring, width, height : i32) {
 }
 
 Destroy :: proc() {
-    fmt.println("LakshimiWindow: Destroy")
+    fmt.println("LakshmiWindow: Destroy")
     Renderer.Destroy()
 
     glfw.DestroyWindow(window)
@@ -52,7 +52,7 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "open", _open },
     }
-    LuaRuntime.BindSingleton(L, "LakshimiWindow", &reg_table)
+    LuaRuntime.BindSingleton(L, "LakshmiWindow", &reg_table)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
@@ -60,7 +60,7 @@ LuaUnbind :: proc(L: ^lua.State) {
 }
 
 MainLoop :: proc() {
-    fmt.println("LakshimiWindow: MainLoop")
+    fmt.println("LakshmiWindow: MainLoop")
     for ! glfw.WindowShouldClose(window) {
         Renderer.Render()
 

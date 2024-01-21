@@ -1,2 +1,2 @@
 #!/bin/sh
-odin run . -out=build/lakshimi -- test/main.lua
+odin run . -out=build/lakshmi -- test/main.lua
