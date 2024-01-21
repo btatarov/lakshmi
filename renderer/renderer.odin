@@ -35,7 +35,7 @@ Init :: proc(width, height : i32) {
     OpenGL.GenVertexArrays(1, &VAO)
     OpenGL.BindVertexArray(VAO)
 
-    vertex_buffer = VertexBuffer.Init(&triangle, size_of(triangle))
+    vertex_buffer = VertexBuffer.Init(triangle[:], size_of(triangle))
     index_buffer = IndexBuffer.Init(indecies[:], len(indecies))
 
     OpenGL.EnableVertexAttribArray(0)
