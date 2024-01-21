@@ -69,5 +69,5 @@ Render :: proc() {
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
     OpenGL.BindVertexArray(VAO)
-    OpenGL.DrawElements(OpenGL.TRIANGLES, 3, OpenGL.UNSIGNED_INT, nil)
+    OpenGL.DrawElements(OpenGL.TRIANGLES, index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }

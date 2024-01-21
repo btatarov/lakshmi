@@ -4,13 +4,13 @@ import "vendor:OpenGL"
 
 IndexBuffer :: struct {
     EBO     : u32,
-    count   : int,
+    count   : i32,
 }
 
-Init :: proc(indecies: []u32, count: int) -> (buffer : IndexBuffer) {
+Init :: proc(indecies: []u32, count: i32) -> (buffer : IndexBuffer) {
     OpenGL.GenBuffers(1, &buffer.EBO)
     OpenGL.BindBuffer(OpenGL.ELEMENT_ARRAY_BUFFER, buffer.EBO)
-    OpenGL.BufferData(OpenGL.ELEMENT_ARRAY_BUFFER, size_of(indecies) * count, &indecies[0], OpenGL.STATIC_DRAW)
+    OpenGL.BufferData(OpenGL.ELEMENT_ARRAY_BUFFER, size_of(indecies) * int(count), &indecies[0], OpenGL.STATIC_DRAW)
 
     buffer.count = count
 
