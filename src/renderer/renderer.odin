@@ -30,6 +30,9 @@ import Shader "shader"
 Init :: proc(width, height : i32) {
     RefreshViewport(width, height)
 
+    OpenGL.BlendFunc(OpenGL.SRC_ALPHA, OpenGL.ONE_MINUS_SRC_ALPHA)
+    OpenGL.Enable(OpenGL.BLEND)
+
     // Testing: wireframe mode
     // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
 
