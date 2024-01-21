@@ -12,34 +12,33 @@ import Shader "shader"
 @private vertex_buffer  : VertexBuffer.VertexBuffer
 @private main_shader    : Shader.Shader
 
-@private VAO            : u32
-
-@private triangle : [3 * 3] f32 = {
-    -0.5, -0.5, 0.0,
-     0.5, -0.5, 0.0,
-     0.0,  0.5, 0.0,
+@private quad : [4 * 6] f32 = {
+    // positions        // colors
+     0.5,  0.5, 0.0,    1.0, 0.0, 0.0,
+     0.5, -0.5, 0.0,    0.0, 1.0, 0.0,
+    -0.5, -0.5, 0.0,    1.0, 0.0, 0.0,
+    -0.5,  0.5, 0.0,    0.0, 0.0, 1.0,
 }
-@private indecies : [3] u32 = {
-    0, 1, 2,
+@private indecies : [2 * 3] u32 = {
+    0, 1, 3,
+    1, 2, 3,
 }
 
 Init :: proc(width, height : i32) {
     RefreshViewport(width, height)
 
+    // Testing: wireframe mode
+    // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
+
     // camera
-    camera := Camera.Init(- (4 / 3), 4 / 3, -1, 1)
+    ratio := f32(width) / f32(height)
+    camera := Camera.Init(-ratio, ratio, -1, 1)
     camera->set_position({0.5, 0.5, 0})
     camera->set_rotation(30)
 
     // buffers
-    OpenGL.GenVertexArrays(1, &VAO)
-    OpenGL.BindVertexArray(VAO)
-
-    vertex_buffer = VertexBuffer.Init(triangle[:], size_of(triangle))
+    vertex_buffer = VertexBuffer.Init(quad[:], size_of(quad))
     index_buffer = IndexBuffer.Init(indecies[:], len(indecies))
-
-    OpenGL.EnableVertexAttribArray(0)
-    OpenGL.VertexAttribPointer(0, 3, OpenGL.FLOAT, OpenGL.FALSE, 3 * size_of(f32), 0)
 
     // shader
     main_shader = Shader.Init()
@@ -56,8 +55,8 @@ Destroy :: proc() {
     VertexBuffer.Destroy(&vertex_buffer)
     IndexBuffer.Destroy(&index_buffer)
 
-    OpenGL.DeleteBuffers(1, &VAO)
-    OpenGL.DeleteVertexArrays(1, &VAO)
+    OpenGL.DeleteBuffers(1, &vertex_buffer.VAO)
+    OpenGL.DeleteVertexArrays(1, &vertex_buffer.VAO)
 }
 
 RefreshViewport :: proc(width, height : i32) {
@@ -68,6 +67,6 @@ Render :: proc() {
     OpenGL.ClearColor(0.3, 0.3, 0.3, 1.0)
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
-    OpenGL.BindVertexArray(VAO)
+    OpenGL.BindVertexArray(vertex_buffer.VAO)
     OpenGL.DrawElements(OpenGL.TRIANGLES, index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }
