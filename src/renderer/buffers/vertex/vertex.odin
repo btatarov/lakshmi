@@ -14,9 +14,11 @@ Init :: proc(vertices: []f32, size: int) -> (buffer : VertexBuffer) {
     OpenGL.GenVertexArrays(1, &buffer.VAO)
     OpenGL.BindVertexArray(buffer.VAO)
     OpenGL.EnableVertexAttribArray(0)
-    OpenGL.VertexAttribPointer(0, 3, OpenGL.FLOAT, OpenGL.FALSE, 6 * size_of(f32), 0)
+    OpenGL.VertexAttribPointer(0, 3, OpenGL.FLOAT, OpenGL.FALSE, 8 * size_of(f32), 0)
     OpenGL.EnableVertexAttribArray(1)
-    OpenGL.VertexAttribPointer(1, 3, OpenGL.FLOAT, OpenGL.FALSE, 6 * size_of(f32), 3 * size_of(f32))
+    OpenGL.VertexAttribPointer(1, 3, OpenGL.FLOAT, OpenGL.FALSE, 8 * size_of(f32), 3 * size_of(f32))
+    OpenGL.EnableVertexAttribArray(2)
+    OpenGL.VertexAttribPointer(2, 2, OpenGL.FLOAT, OpenGL.FALSE, 8 * size_of(f32), 6 * size_of(f32))
 
     return
 }
