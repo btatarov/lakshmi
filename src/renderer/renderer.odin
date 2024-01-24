@@ -9,11 +9,12 @@ import IndexBuffer "buffers/index"
 import VertexBuffer "buffers/vertex"
 import Camera "camera"
 import Shader "shader"
+import Texture "texture"
 
 @private index_buffer   : IndexBuffer.IndexBuffer
 @private vertex_buffer  : VertexBuffer.VertexBuffer
 @private main_shader    : Shader.Shader
-@private texture        : u32
+@private texture        : Texture.Texture
 
 @private quad : [4 * 9] f32 = {
     // positions        // colors               // uv coords
@@ -46,18 +47,7 @@ Init :: proc(width, height : i32) {
     main_shader = Shader.Init()
 
     // texture
-    sprite, err := png.load_from_file("test/lakshmi.png")
-    assert(err == nil , "Failed to load texture")
-    defer png.destroy(sprite)
-
-    OpenGL.GenTextures(1, &texture)
-    OpenGL.BindTexture(OpenGL.TEXTURE_2D, texture)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_WRAP_S, OpenGL.CLAMP_TO_EDGE)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_WRAP_T, OpenGL.CLAMP_TO_EDGE)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MIN_FILTER, OpenGL.LINEAR)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MAG_FILTER, OpenGL.NEAREST)
-    OpenGL.TexImage2D(OpenGL.TEXTURE_2D, 0, OpenGL.RGBA, i32(sprite.width), i32(sprite.height), 0, OpenGL.RGBA, OpenGL.UNSIGNED_BYTE, raw_data(sprite.pixels.buf))
-    OpenGL.GenerateMipmap(OpenGL.TEXTURE_2D)
+    texture = Texture.Init("test/lakshmi.png")
 
     // buffers
     vertex_buffer = VertexBuffer.Init(quad[:], size_of(quad))
@@ -87,7 +77,7 @@ Render :: proc() {
     OpenGL.ClearColor(0.3, 0.3, 0.3, 1.0)
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
-    OpenGL.BindTexture(OpenGL.TEXTURE_2D, texture)
+    OpenGL.BindTexture(OpenGL.TEXTURE_2D, texture.id)
     OpenGL.BindVertexArray(vertex_buffer.VAO)
     OpenGL.DrawElements(OpenGL.TRIANGLES, index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }
