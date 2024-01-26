@@ -58,6 +58,8 @@ Init :: proc(width, height : i32) {
 Destroy :: proc() {
     Shader.Destroy(&main_shader)
 
+    Texture.Destroy(&texture)
+
     VertexBuffer.Destroy(&vertex_buffer)
     IndexBuffer.Destroy(&index_buffer)
 

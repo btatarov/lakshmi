@@ -6,8 +6,8 @@ import "core:image/png"
 import "vendor:OpenGL"
 
 Texture :: struct {
-    path: string,
-    id: u32,
+    path:   string,
+    id:     u32,
 }
 
 Init :: proc(path: string) -> (tex: Texture) {
@@ -27,4 +27,8 @@ Init :: proc(path: string) -> (tex: Texture) {
     OpenGL.GenerateMipmap(OpenGL.TEXTURE_2D)
 
     return
+}
+
+Destroy :: proc(tex: ^Texture) {
+    OpenGL.DeleteTextures(1, &tex.id)
 }
