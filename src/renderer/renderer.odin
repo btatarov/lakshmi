@@ -9,6 +9,7 @@ import Camera "camera"
 import Shader "shader"
 import Sprite "sprite"
 
+@private camera         : Camera.Camera
 @private main_shader    : Shader.Shader
 @private img1, img2     : Sprite.Sprite
 
@@ -23,13 +24,12 @@ Init :: proc(width, height : i32) {
 
     // camera
     ratio := f32(width) / f32(height)
-    camera := Camera.Init(-ratio, ratio, -1, 1)
+    camera = Camera.Init(-ratio, ratio, -1, 1)
     camera->set_position({0.5, 0.5, 0})
     camera->set_rotation(30)
 
     // shader
     main_shader = Shader.Init()
-    main_shader->apply_projection(camera->get_vp_matrix())
 
     // sprites
     img1 = Sprite.Init("test/lakshmi.png")
@@ -50,6 +50,9 @@ RefreshViewport :: proc(width, height : i32) {
 Render :: proc() {
     OpenGL.ClearColor(0.3, 0.3, 0.3, 1.0)
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
+
+    main_shader->bind()
+    main_shader->apply_projection(camera->get_vp_matrix())
 
     img1->render()
     img2->render()
