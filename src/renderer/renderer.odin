@@ -7,12 +7,14 @@ import "vendor:OpenGL"
 
 import IndexBuffer "buffers/index"
 import VertexBuffer "buffers/vertex"
+import VertexArray "buffers/array"
 import Camera "camera"
 import Shader "shader"
 import Texture "texture"
 
 @private index_buffer   : IndexBuffer.IndexBuffer
 @private vertex_buffer  : VertexBuffer.VertexBuffer
+@private vertex_array   : VertexArray.VertexArray
 @private main_shader    : Shader.Shader
 @private texture        : Texture.Texture
 
@@ -52,6 +54,7 @@ Init :: proc(width, height : i32) {
 
     // buffers
     vertex_buffer = VertexBuffer.Init(quad[:], size_of(quad))
+    vertex_array = VertexArray.Init()
     index_buffer = IndexBuffer.Init(indecies[:], len(indecies))
 }
 
@@ -61,10 +64,8 @@ Destroy :: proc() {
     Texture.Destroy(&texture)
 
     VertexBuffer.Destroy(&vertex_buffer)
+    VertexArray.Destroy(&vertex_array)
     IndexBuffer.Destroy(&index_buffer)
-
-    OpenGL.DeleteBuffers(1, &vertex_buffer.VAO)
-    OpenGL.DeleteVertexArrays(1, &vertex_buffer.VAO)
 }
 
 RefreshViewport :: proc(width, height : i32) {
@@ -76,6 +77,6 @@ Render :: proc() {
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
     OpenGL.BindTexture(OpenGL.TEXTURE_2D, texture.id)
-    OpenGL.BindVertexArray(vertex_buffer.VAO)
+    OpenGL.BindVertexArray(vertex_array.id)
     OpenGL.DrawElements(OpenGL.TRIANGLES, index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }
