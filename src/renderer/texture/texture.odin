@@ -8,6 +8,11 @@ import "vendor:OpenGL"
 Texture :: struct {
     path:   string,
     id:     u32,
+    width:  u32,
+    height: u32,
+
+    bind:   proc(tex: ^Texture),
+    unbind: proc(tex: ^Texture),
 }
 
 Init :: proc(path: string) -> (tex: Texture) {
@@ -16,6 +21,11 @@ Init :: proc(path: string) -> (tex: Texture) {
     defer png.destroy(sprite)
 
     tex.path = path
+    tex.width = u32(sprite.width)
+    tex.height = u32(sprite.height)
+
+    tex.bind   = texture_bind
+    tex.unbind = texture_unbind
 
     OpenGL.GenTextures(1, &tex.id)
     OpenGL.BindTexture(OpenGL.TEXTURE_2D, tex.id)
@@ -31,4 +41,12 @@ Init :: proc(path: string) -> (tex: Texture) {
 
 Destroy :: proc(tex: ^Texture) {
     OpenGL.DeleteTextures(1, &tex.id)
+}
+
+texture_bind :: proc(tex: ^Texture) {
+    OpenGL.BindTexture(OpenGL.TEXTURE_2D, tex.id)
+}
+
+texture_unbind :: proc(_: ^Texture) {
+    OpenGL.BindTexture(OpenGL.TEXTURE_2D, 0)
 }
