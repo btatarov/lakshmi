@@ -9,6 +9,7 @@ import "vendor:OpenGL"
 
 import LuaRuntime "../lua"
 import Renderer "../renderer"
+import Sprite "../renderer/sprite"
 
 OPENGL_VERSION_MAJOR :: 3
 OPENGL_VERSION_MINOR :: 3
@@ -36,7 +37,6 @@ Init :: proc(title : cstring, width, height : i32) {
     OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
     width, height := glfw.GetFramebufferSize(window)
-
     Renderer.Init(width, height)
 }
 
@@ -90,7 +90,6 @@ _open :: proc "c" (L: ^lua.State) -> i32 {
     width := i32(lua.L_checkinteger(L, 2))
     height := i32(lua.L_checkinteger(L, 3))
     Init(title, width, height)
-    MainLoop()
 
     return 0
 }

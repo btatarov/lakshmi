@@ -1,11 +1,17 @@
 package sprite
 
+import "core:fmt"
+import "core:runtime"
+
+import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 
 import VertexArray "../buffers/array"
 import IndexBuffer "../buffers/index"
 import VertexBuffer "../buffers/vertex"
 import Texture "../texture"
+
+import LuaRuntime "../../lua"
 
 Sprite :: struct {
     pos_x:          i32,
@@ -24,7 +30,8 @@ Sprite :: struct {
     render:         proc(img: ^Sprite),
 }
 
-Init :: proc(path: string) -> (img: Sprite) {
+Init :: proc(img: ^Sprite, path: string) {
+    fmt.println("LakshmiSprite: Init")
     img.texture = Texture.Init(path)
 
     // TODO: those should be different in the future
@@ -61,10 +68,23 @@ Init :: proc(path: string) -> (img: Sprite) {
 }
 
 Destroy :: proc(img: ^Sprite) {
+    fmt.println("LakshmiSprite: Destroy")
     Texture.Destroy(&img.texture)
     VertexBuffer.Destroy(&img.vertex_buffer)
     VertexArray.Destroy(&img.vertex_array)
     IndexBuffer.Destroy(&img.index_buffer)
+}
+
+LuaBind :: proc(L: ^lua.State) {
+    @static reg_table: []lua.L_Reg = {
+        { "new", _new },
+        { "setPos", _set_pos },
+    }
+    LuaRuntime.BindClass(L, "LakshmiSprite", &reg_table, __gc)
+}
+
+LuaUnbind :: proc(L: ^lua.State) {
+    // EMPTY
 }
 
 sprite_get_pos :: proc(img: ^Sprite) -> (i32, i32) {
@@ -91,4 +111,36 @@ sprite_render :: proc(img: ^Sprite) {
     img.texture->bind()
     img.vertex_array->bind()
     OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
+}
+
+_new :: proc "c" (L: ^lua.State) -> i32 {
+    context = runtime.default_context()
+
+    sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
+    Init(sprite, "test/lakshmi.png")
+
+    LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
+
+    return 1
+}
+
+
+_set_pos :: proc "c" (L: ^lua.State) -> i32 {
+    context = runtime.default_context()
+
+    sprite := (^Sprite)(lua.touserdata(L, -3))
+    x := i32(lua.tointeger(L, -2))
+    y := i32(lua.tointeger(L, -1))
+    sprite.set_position(sprite, x, y)
+
+    return 0
+}
+
+__gc :: proc "c" (L: ^lua.State) -> i32 {
+    context = runtime.default_context()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    Destroy(sprite)
+
+    return 0
 }

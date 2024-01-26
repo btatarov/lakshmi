@@ -5,6 +5,9 @@ import "core:mem"
 import "core:os"
 
 import LuaRuntime "lua"
+
+import Renderer "renderer"
+import Sprite "renderer/sprite"
 import Window "window"
 
 main :: proc() {
@@ -26,6 +29,14 @@ main :: proc() {
     Window.LuaBind(L)
     defer Window.LuaUnbind(L)
 
+    Renderer.LuaBind(L)
+    defer Renderer.LuaUnbind(L)
+
+    Sprite.LuaBind(L)
+    defer Sprite.LuaUnbind(L)
+
     LuaRuntime.Run(L, os.args[1:])
     defer LuaRuntime.Destroy(L)
+
+    Window.MainLoop()
 }

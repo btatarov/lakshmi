@@ -11,6 +11,32 @@ Init :: proc() -> (L: ^lua.State) {
     return
 }
 
+BindClass :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg, destructor: proc "c" (L: ^lua.State) -> i32) {
+    lua.newtable(L)
+    index := lua.gettop(L)
+
+    lua.pushvalue(L, index)
+    lua.setglobal(L, name)
+    lua.L_setfuncs(L, raw_data(reg_table[:]), 0)
+
+    lua.L_newmetatable(L, fmt.ctprintf("%sMT", name))
+
+    lua.pushstring(L, "__gc")
+    lua.pushcfunction(L, lua.CFunction(destructor))
+    lua.settable(L, -3)
+
+    lua.pushstring(L, "__index")
+    lua.pushvalue(L, index)
+    lua.settable(L, -3)
+}
+
+BindClassMetatable :: proc(L: ^lua.State, name: cstring) {
+    index := lua.gettop(L)
+    lua.L_getmetatable(L, fmt.ctprintf("%sMT", name))
+    assert(lua.istable(L, -1), fmt.tprintf("%sMT is not a table", name))
+    lua.setmetatable(L, index)
+}
+
 BindSingleton :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg) {
     // TODO: const fields, e.g. LakshmiWindow.ON_CLOSE
     lua.newtable(L)
