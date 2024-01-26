@@ -45,6 +45,7 @@ Init :: proc(width, height : i32) {
 
     // shader
     main_shader = Shader.Init()
+    main_shader->apply_projection(camera->get_vp_matrix())
 
     // texture
     texture = Texture.Init("test/lakshmi.png")
@@ -52,11 +53,6 @@ Init :: proc(width, height : i32) {
     // buffers
     vertex_buffer = VertexBuffer.Init(quad[:], size_of(quad))
     index_buffer = IndexBuffer.Init(indecies[:], len(indecies))
-
-    // apply camera projection matrix
-    vp_matrix := camera->get_vp_matrix()
-    uniform_location := OpenGL.GetUniformLocation(main_shader.program, "u_projection")
-    OpenGL.UniformMatrix4fv(uniform_location, 1, false, &vp_matrix[0][0])
 }
 
 Destroy :: proc() {

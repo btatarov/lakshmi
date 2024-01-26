@@ -10,11 +10,11 @@ Camera :: struct {
     position    : linalg.Vector3f32,
     rotation    : f32,
 
-    get_position            : proc(camera: ^Camera) -> linalg.Vector3f32,
-    get_projection_matrix   : proc(camera: ^Camera) -> linalg.Matrix4f32,
+    get_position            : proc(camera: ^Camera) -> ^linalg.Vector3f32,
+    get_projection_matrix   : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
     get_rotation            : proc(camera: ^Camera) -> f32,
-    get_view_matrix         : proc(camera: ^Camera) -> linalg.Matrix4f32,
-    get_vp_matrix           : proc(camera: ^Camera) -> linalg.Matrix4f32,
+    get_view_matrix         : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
+    get_vp_matrix           : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
 
     set_position            : proc(camera: ^Camera, position: linalg.Vector3f32),
     set_rotation            : proc(camera: ^Camera, rotation: f32),
@@ -39,24 +39,24 @@ Init :: proc(left, right, bottom, top: f32) -> (camera: Camera) {
     return
 }
 
-camera_get_position :: proc(camera: ^Camera) -> linalg.Vector3f32 {
-    return camera.position
+camera_get_position :: proc(camera: ^Camera) -> ^linalg.Vector3f32 {
+    return &camera.position
 }
 
-camera_get_projection_matrix :: proc(camera: ^Camera) -> linalg.Matrix4f32 {
-    return camera.projection
+camera_get_projection_matrix :: proc(camera: ^Camera) -> ^linalg.Matrix4f32 {
+    return &camera.projection
 }
 
 camera_get_rotation :: proc(camera: ^Camera) -> f32 {
     return camera.rotation
 }
 
-camera_get_view_matrix :: proc(camera: ^Camera) -> linalg.Matrix4f32 {
-    return camera.view
+camera_get_view_matrix :: proc(camera: ^Camera) -> ^linalg.Matrix4f32 {
+    return &camera.view
 }
 
-camera_get_vp_matrix :: proc(camera: ^Camera) -> linalg.Matrix4f32 {
-    return camera.vp
+camera_get_vp_matrix :: proc(camera: ^Camera) -> ^linalg.Matrix4f32 {
+    return &camera.vp
 }
 
 camera_set_position :: proc(camera: ^Camera, position: linalg.Vector3f32) {
