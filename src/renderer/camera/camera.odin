@@ -17,6 +17,7 @@ Camera :: struct {
     get_vp_matrix           : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
 
     set_position            : proc(camera: ^Camera, position: linalg.Vector3f32),
+    set_projection_matrix   : proc(camera: ^Camera, left, right, bottom, top: f32),
     set_rotation            : proc(camera: ^Camera, rotation: f32),
 
     update_view_matrix      : proc(camera: ^Camera),
@@ -31,10 +32,11 @@ Init :: proc(left, right, bottom, top: f32) -> (camera: Camera) {
     camera.get_view_matrix = camera_get_view_matrix
     camera.get_vp_matrix = camera_get_vp_matrix
     camera.set_position = camera_set_position
+    camera.set_projection_matrix = camera_set_projection_matrix
     camera.set_rotation = camera_set_rotation
     camera.update_view_matrix = camera_update_view_matrix
 
-    camera->update_view_matrix()
+    camera->set_projection_matrix(left, right, bottom, top)
 
     return
 }
@@ -61,6 +63,11 @@ camera_get_vp_matrix :: proc(camera: ^Camera) -> ^linalg.Matrix4f32 {
 
 camera_set_position :: proc(camera: ^Camera, position: linalg.Vector3f32) {
     camera.position = position
+    camera->update_view_matrix()
+}
+
+camera_set_projection_matrix :: proc(camera: ^Camera, left, right, bottom, top: f32) {
+    camera.projection = linalg.matrix_ortho3d(left, right, bottom, top, -1, 1)
     camera->update_view_matrix()
 }
 

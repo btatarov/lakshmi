@@ -14,8 +14,6 @@ import Sprite "sprite"
 @private img1, img2     : Sprite.Sprite
 
 Init :: proc(width, height : i32) {
-    RefreshViewport(width, height)
-
     OpenGL.BlendFunc(OpenGL.SRC_ALPHA, OpenGL.ONE_MINUS_SRC_ALPHA)
     OpenGL.Enable(OpenGL.BLEND)
 
@@ -35,6 +33,8 @@ Init :: proc(width, height : i32) {
     img1 = Sprite.Init("test/lakshmi.png")
     img2 = Sprite.Init("test/lakshmi.png")
     img2->set_position(0, 0)
+
+    RefreshViewport(width, height)
 }
 
 Destroy :: proc() {
@@ -45,6 +45,9 @@ Destroy :: proc() {
 
 RefreshViewport :: proc(width, height : i32) {
     OpenGL.Viewport(0, 0, width, height)
+
+    ratio := f32(width) / f32(height)
+    camera->set_projection_matrix(-ratio, ratio, -1, 1)
 }
 
 Render :: proc() {
