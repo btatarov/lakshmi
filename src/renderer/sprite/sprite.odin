@@ -90,7 +90,5 @@ sprite_set_pos :: proc(img: ^Sprite, x, y: i32) {
 sprite_render :: proc(img: ^Sprite) {
     img.texture->bind()
     img.vertex_array->bind()
-    img.index_buffer->bind(img.indecies[:], len(img.indecies))
-
     OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }
