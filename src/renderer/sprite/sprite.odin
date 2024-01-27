@@ -79,6 +79,7 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new", _new },
         { "setPos", _set_pos },
+        { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiSprite", &reg_table, __gc)
 }

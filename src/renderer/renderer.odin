@@ -64,6 +64,7 @@ Render :: proc() {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "add", _add },
+        { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiRenderer", &reg_table)
 }

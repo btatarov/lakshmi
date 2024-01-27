@@ -1,7 +1,7 @@
 package lua
 
-import "core:strings"
 import "core:fmt"
+import "core:strings"
 
 import lua "vendor:lua/5.4"
 

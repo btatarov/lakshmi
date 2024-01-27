@@ -51,6 +51,7 @@ Destroy :: proc() {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "open", _open },
+        { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiWindow", &reg_table)
 }
