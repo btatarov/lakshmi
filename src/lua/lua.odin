@@ -70,3 +70,44 @@ Run :: proc(L: ^lua.State, args: []string) -> bool {
 
     return true
 }
+
+GetField :: proc(L: ^lua.State, idx, key: i32) {
+    abs_idx := GetAbsIndex(L, idx)
+	lua.pushinteger(L, lua.Integer(key))
+	lua.gettable(L, abs_idx)
+}
+
+GetAbsIndex :: proc(L: ^lua.State, idx: i32) -> i32 {
+    if idx < 0 {
+        return lua.gettop(L) + idx + 1
+    }
+    return idx
+}
+
+PushTableItr :: proc(L: ^lua.State, idx: i32) -> i32 {
+    itr := GetAbsIndex(L, idx)
+	lua.pushnil(L)
+	lua.pushnil(L)
+	lua.pushnil(L)
+	return itr
+}
+
+TableItrNext :: proc(L: ^lua.State, itr: i32) -> bool {
+    lua.pop(L, 2)  // pop the prev key/value; leave the key
+    if lua.next(L, itr) != 0 {
+		CopyToTop(L, -2)
+		MoveToTop(L, -2)
+		return true
+	}
+	return false
+}
+
+CopyToTop :: proc(L: ^lua.State, idx: i32) {
+    lua.pushvalue(L, idx)
+}
+
+MoveToTop :: proc(L: ^lua.State, idx: i32) {
+    abs_idx := GetAbsIndex(L, idx)
+    lua.pushvalue(L, abs_idx)
+	lua.remove(L, abs_idx)
+}

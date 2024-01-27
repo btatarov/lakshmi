@@ -10,3 +10,5 @@ List of available functions:
 * LakshmiSprite.new(path)
 * LakshmiSprite.setPos(sprite, x, y)
 * LakshmiRenderer.add(sprite)
+* LakshmiJSON.decode(json_string)
+* LakshmiJSON.encode(lua_table)

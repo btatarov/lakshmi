@@ -4,6 +4,7 @@ import "core:fmt"
 import "core:mem"
 import "core:os"
 
+import JSON "json"
 import LuaRuntime "lua"
 
 import Renderer "renderer"
@@ -34,6 +35,9 @@ main :: proc() {
 
     Sprite.LuaBind(L)
     defer Sprite.LuaUnbind(L)
+
+    JSON.LuaBind(L)
+    defer JSON.LuaUnbind(L)
 
     LuaRuntime.Run(L, os.args[1:])
     defer LuaRuntime.Destroy(L)
