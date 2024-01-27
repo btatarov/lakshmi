@@ -17,7 +17,7 @@ Texture :: struct {
 
 Init :: proc(path: string) -> (tex: Texture) {
     sprite, err := png.load_from_file(path)
-    assert(err == nil , fmt.tprintf("Failed to load texture:", path))
+    assert(err == nil , fmt.tprintf("Failed to load texture: %s", path))
     defer png.destroy(sprite)
 
     tex.path = path
