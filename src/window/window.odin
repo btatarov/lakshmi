@@ -1,7 +1,8 @@
 package window
 
+import "base:runtime"
+
 import "core:fmt"
-import "core:runtime"
 
 import "vendor:glfw"
 import lua "vendor:lua/5.4"

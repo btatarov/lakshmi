@@ -1,9 +1,10 @@
 package json_parser
 
+import "base:runtime"
+
 import "core:encoding/json"
 import "core:fmt"
 import "core:math"
-import "core:runtime"
 import "core:strings"
 
 import lua "vendor:lua/5.4"

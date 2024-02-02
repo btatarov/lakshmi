@@ -1,7 +1,8 @@
 package sprite
 
+import "base:runtime"
+
 import "core:fmt"
-import "core:runtime"
 
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
