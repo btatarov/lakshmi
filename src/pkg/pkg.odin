@@ -13,6 +13,13 @@ HEADER_CRC32_POS :: 12
 HEADER_SIZE :: 20
 MAX_PATH_LEN :: 1024
 
+PackageErr :: enum {
+    None,
+    InvalidHeaderMagic,
+    InvalidHeaderVersion,
+    InvalidDataCRC32,
+}
+
 Header :: struct #packed {
     magic:      [4]byte,
     version:    u32,
@@ -38,9 +45,8 @@ Package :: struct {
     data_size: u64,
 }
 
-CRC32 :: proc(pkg: ^Package) -> (hash: u32) {
-    // TODO:
-    return
+CRC32 :: proc(pkg: ^Package) -> (crc32: u32) {
+    return hash.crc32(pkg.data[:])
 }
 
 Compress :: proc(input: [^]byte, len: u64) -> (string, bool) {
@@ -71,7 +77,10 @@ Uncompress :: proc(input: [^]byte, len: u64, original_len: u64) -> (string, bool
     return strings.clone_from_bytes(buf[:original_len], allocator=context.temp_allocator), true
 }
 
-Verify :: proc(pkg: ^Package) -> bool {
-    // TODO:
-    return true
+Verify :: proc(pkg: ^Package) -> (err: PackageErr) {
+    fmt.println(pkg.header.crc32, CRC32(pkg), len(pkg.data))
+    if pkg.header.magic != HEADER_MAGIC do return .InvalidHeaderMagic
+    if pkg.header.version > HEADER_VERSION do return .InvalidHeaderVersion
+    if pkg.header.crc32 != CRC32(pkg) do return .InvalidDataCRC32
+    return .None
 }

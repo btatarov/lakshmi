@@ -15,39 +15,41 @@ Package :: struct {
     read_file : proc(pkg: ^Package, file_path: string) -> []byte,
 }
 
+PackageErr :: enum {
+    None,
+    InvalidHeaderMagic,
+    InvalidHeaderVersion,
+    InvalidDataCRC32,
+}
+
 Init :: proc(path: string) -> (pkg: Package) {
     pkg.path = path
     pkg.data = make(map[string]Pkg.Chunk)
 
     pkg.read_file = package_read_file
 
-    data, ok := os.read_entire_file_from_filename(path)
-    assert(ok, fmt.tprintf("Pkg: Failed to read file: %s", path))
-
-    // TODO: this duplicates the memory
-    buf: bytes.Buffer
-    bytes.buffer_init(&buf, data)
-    delete(data)
-    defer bytes.buffer_destroy(&buf)
+    file, err := os.open(pkg.path, os.O_CREATE | os.O_RDONLY)
+    assert(err == 0, fmt.tprintf("Pkg: Failed to open file: %s", pkg.path))
 
     base_pkg: Pkg.Package = {path = path}
     defer delete(base_pkg.toc)
+    defer delete(base_pkg.data)
 
-    _, err := bytes.buffer_read_ptr(&buf, &base_pkg.header, size_of(base_pkg.header))
-    assert(err == .None, fmt.tprintf("Pkg: Failed to read header from file: %s", path))
+    os.read_ptr(file, &base_pkg.header, size_of(base_pkg.header))
     pkg.offset = size_of(base_pkg.header)
 
+    // read toc
     for i in 0..<base_pkg.header.num_chunks {
         chunk: Pkg.Chunk
         name_buf: [Pkg.MAX_PATH_LEN]byte
 
-        bytes.buffer_read_ptr(&buf, &chunk.name_len, size_of(u32))
-        bytes.buffer_read_ptr(&buf, &name_buf, int(chunk.name_len))
+        os.read_ptr(file, &chunk.name_len, size_of(u32))
+        os.read_ptr(file, &name_buf, int(chunk.name_len))
         chunk.name = strings.clone(strings.string_from_ptr(&name_buf[0], int(chunk.name_len)), allocator=context.temp_allocator)
 
-        bytes.buffer_read_ptr(&buf, &chunk.offset, size_of(u64))
-        bytes.buffer_read_ptr(&buf, &chunk.size, size_of(u64))
-        bytes.buffer_read_ptr(&buf, &chunk.orig_size, size_of(u64))
+        os.read_ptr(file, &chunk.offset, size_of(u64))
+        os.read_ptr(file, &chunk.size, size_of(u64))
+        os.read_ptr(file, &chunk.orig_size, size_of(u64))
 
         pkg.offset += u64(size_of(chunk) - size_of(chunk.name) + chunk.name_len)
 
@@ -55,7 +57,19 @@ Init :: proc(path: string) -> (pkg: Package) {
         append(&base_pkg.toc, chunk)
     }
 
-    // TODO: verify base_pkg
+    // read data
+    data_buf := make([]byte, 1)
+    defer delete(data_buf)
+    for {
+        bytes, err := os.read(file, data_buf)
+        if bytes == 0 do break
+        append(&base_pkg.data, data_buf[0])
+    }
+
+    verify_err := Pkg.Verify(&base_pkg)
+    fmt.println(verify_err)
+    assert(verify_err == .None, fmt.tprintf("Pkg: Failed to verify package: %s", path))
+
     return
 }
 
