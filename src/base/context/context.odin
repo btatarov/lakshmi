@@ -4,16 +4,15 @@ import "base:runtime"
 
 import "core:log"
 
-when ODIN_DEBUG {
-    level := log.Level.Debug
-} else {
-    level := log.Level.Info
-}
-
 @private default_logger: log.Logger
 
 Init :: proc() {
-    default_logger = log.create_console_logger(level)
+    when ODIN_DEBUG {
+        log_level := log.Level.Debug
+    } else {
+        log_level := log.Level.Info
+    }
+    default_logger = log.create_console_logger(log_level)
 }
 
 Destroy :: proc() {
