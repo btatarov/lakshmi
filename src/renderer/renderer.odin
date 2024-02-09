@@ -1,12 +1,11 @@
 package renderer
 
-import "base:runtime"
-
-import "core:fmt"
 import "core:image/png"
 
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
+
+import LakshmiContext "../base/context"
 
 import Camera "camera"
 import Shader "shader"
@@ -75,7 +74,7 @@ LuaUnbind :: proc(L: ^lua.State) {
 }
 
 _add :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     // TODO: remove on __gc or __close?
     sprite := (^Sprite.Sprite)(lua.touserdata(L, -1))

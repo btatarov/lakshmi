@@ -1,7 +1,7 @@
 package pkg
 
-import "core:fmt"
 import "core:hash"
+import "core:log"
 import "core:os"
 import "core:strings"
 
@@ -56,7 +56,7 @@ Compress :: proc(input: [^]byte, len: u64) -> (string, bool) {
     defer delete(buf)
 
     if err := zlib.compress(raw_data(buf), &bound, input, len); err != 0 {
-        // TODO: error log
+        log.errorf("Pkg: compress error: %d\n", err)
         return "", false
     }
 
@@ -70,7 +70,7 @@ Uncompress :: proc(input: [^]byte, len: u64, original_len: u64) -> (string, bool
     defer delete(buf)
 
     if err := zlib.uncompress(raw_data(buf), &original_len, input, len); err != 0 {
-        // TODO: error log
+        log.errorf("Pkg: uncompress error: %d\n", err)
         return "", false
     }
 
@@ -78,7 +78,6 @@ Uncompress :: proc(input: [^]byte, len: u64, original_len: u64) -> (string, bool
 }
 
 Verify :: proc(pkg: ^Package) -> (err: PackageErr) {
-    fmt.println(pkg.header.crc32, CRC32(pkg), len(pkg.data))
     if pkg.header.magic != HEADER_MAGIC do return .InvalidHeaderMagic
     if pkg.header.version > HEADER_VERSION do return .InvalidHeaderVersion
     if pkg.header.crc32 != CRC32(pkg) do return .InvalidDataCRC32

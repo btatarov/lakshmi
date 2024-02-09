@@ -1,6 +1,7 @@
 package lua
 
 import "core:fmt"
+import "core:log"
 import "core:strings"
 
 import lua "vendor:lua/5.4"
@@ -47,7 +48,7 @@ BindSingleton :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg) {
 
 CheckOK :: proc(L: ^lua.State, status: lua.Status) -> bool {
     if status != lua.OK {
-        fmt.println(lua.tostring(L, -1))
+        log.errorf("%s\n", lua.tostring(L, -1))
         return false
     }
     return true

@@ -1,29 +1,38 @@
 package main
 
 import "core:fmt"
+import "core:log"
 import "core:mem"
 import "core:os"
+
+import "base:runtime"
 
 import JSON "json"
 import LuaRuntime "lua"
 
+import LakshmiContext "base/context"
 import Renderer "renderer"
 import Sprite "renderer/sprite"
 import Window "window"
 
 main :: proc() {
-    tracking_allocator: mem.Tracking_Allocator
-    mem.tracking_allocator_init(&tracking_allocator, context.allocator)
-    context.allocator = mem.tracking_allocator(&tracking_allocator)
-    defer if len(tracking_allocator.allocation_map) > 0 || len(tracking_allocator.bad_free_array) > 0 {
-        fmt.println()
-        for _, leak in tracking_allocator.allocation_map {
-            fmt.printf("%v leaked %v bytes\n", leak.location, leak.size)
-        }
-        for bad_free in tracking_allocator.bad_free_array {
-            fmt.printf("%v allocation %p was freed badly\n", bad_free.location, bad_free.memory)
+    when ODIN_DEBUG {
+        tracking_allocator: mem.Tracking_Allocator
+        mem.tracking_allocator_init(&tracking_allocator, context.allocator)
+        context.allocator = mem.tracking_allocator(&tracking_allocator)
+        defer if len(tracking_allocator.allocation_map) > 0 || len(tracking_allocator.bad_free_array) > 0 {
+            fmt.println()
+            for _, leak in tracking_allocator.allocation_map {
+                fmt.printf("%v leaked %v bytes\n", leak.location, leak.size)
+            }
+            for bad_free in tracking_allocator.bad_free_array {
+                fmt.printf("%v allocation %p was freed badly\n", bad_free.location, bad_free.memory)
+            }
         }
     }
+
+    LakshmiContext.Init()
+    defer LakshmiContext.Destroy()
 
     L := LuaRuntime.Init()
 

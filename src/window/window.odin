@@ -1,13 +1,12 @@
 package window
 
-import "base:runtime"
-
-import "core:fmt"
+import "core:log"
 
 import "vendor:glfw"
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 
+import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 import Renderer "../renderer"
 import Sprite "../renderer/sprite"
@@ -18,7 +17,7 @@ OPENGL_VERSION_MINOR :: 3
 window : glfw.WindowHandle
 
 Init :: proc(title : cstring, width, height : i32) {
-    fmt.println("LakshmiWindow: Init")
+    log.debugf("LakshmiWindow: Init\n")
 
     assert(bool(glfw.Init()), "GLFW init failed")
 
@@ -42,7 +41,8 @@ Init :: proc(title : cstring, width, height : i32) {
 }
 
 Destroy :: proc() {
-    fmt.println("LakshmiWindow: Destroy")
+    log.debugf("LakshmiWindow: Destroy\n")
+
     Renderer.Destroy()
 
     glfw.DestroyWindow(window)
@@ -62,7 +62,8 @@ LuaUnbind :: proc(L: ^lua.State) {
 }
 
 MainLoop :: proc() {
-    fmt.println("LakshmiWindow: MainLoop")
+    log.debugf("LakshmiWindow: MainLoop\n", "test")
+
     for ! glfw.WindowShouldClose(window) {
         Renderer.Render()
 
@@ -74,7 +75,7 @@ MainLoop :: proc() {
 }
 
 OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : i32) {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     Renderer.RefreshViewport(width, height)
 }
@@ -86,7 +87,7 @@ OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, actio
 }
 
 _open :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     title := lua.L_checkstring(L, 1)
     width := i32(lua.L_checkinteger(L, 2))

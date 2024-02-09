@@ -1,7 +1,5 @@
 package json_parser
 
-import "base:runtime"
-
 import "core:encoding/json"
 import "core:fmt"
 import "core:math"
@@ -9,6 +7,7 @@ import "core:strings"
 
 import lua "vendor:lua/5.4"
 
+import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 
 LuaBind :: proc(L: ^lua.State) {
@@ -115,7 +114,7 @@ LuaToJson :: proc(L: ^lua.State, idx: i32) -> json.Value {
 }
 
 _decode :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     json_str := lua.L_checkstring(L, 1)
     json_data, err := json.parse_string(string(json_str), parse_integers=true)
@@ -126,7 +125,7 @@ _decode :: proc "c" (L: ^lua.State) -> i32 {
 }
 
 _encode :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     assert(lua.istable(L, 1), "LakshmiJSON: First argument must be a table.")
 

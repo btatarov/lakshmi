@@ -1,11 +1,11 @@
 package sprite
 
-import "base:runtime"
-
-import "core:fmt"
+import "core:log"
 
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
+
+import LakshmiContext "../../base/context"
 
 import VertexArray "../buffers/array"
 import IndexBuffer "../buffers/index"
@@ -32,7 +32,8 @@ Sprite :: struct {
 }
 
 Init :: proc(img: ^Sprite, path: string) {
-    fmt.println("LakshmiSprite: Init")
+    log.debugf("LakshmiSprite: Init: %s\n", path)
+
     img.texture = Texture.Init(path)
 
     // TODO: those should be different in the future
@@ -69,7 +70,8 @@ Init :: proc(img: ^Sprite, path: string) {
 }
 
 Destroy :: proc(img: ^Sprite) {
-    fmt.println("LakshmiSprite: Destroy")
+    log.debugf("LakshmiSprite: Destroy\n")
+
     Texture.Destroy(&img.texture)
     VertexBuffer.Destroy(&img.vertex_buffer)
     VertexArray.Destroy(&img.vertex_array)
@@ -116,7 +118,7 @@ sprite_render :: proc(img: ^Sprite) {
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
     Init(sprite, "test/lakshmi.png")
@@ -128,7 +130,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 
 
 _set_pos :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -3))
     x := i32(lua.tointeger(L, -2))
@@ -139,7 +141,7 @@ _set_pos :: proc "c" (L: ^lua.State) -> i32 {
 }
 
 __gc :: proc "c" (L: ^lua.State) -> i32 {
-    context = runtime.default_context()
+    context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -1))
     Destroy(sprite)

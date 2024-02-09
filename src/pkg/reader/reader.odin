@@ -67,7 +67,6 @@ Init :: proc(path: string) -> (pkg: Package) {
     }
 
     verify_err := Pkg.Verify(&base_pkg)
-    fmt.println(verify_err)
     assert(verify_err == .None, fmt.tprintf("Pkg: Failed to verify package: %s", path))
 
     return
