@@ -13,6 +13,7 @@ Init :: proc() {
         log_level := log.Level.Info
     }
     default_logger = log.create_console_logger(log_level)
+    context.logger = default_logger
 }
 
 Destroy :: proc() {
