@@ -1,7 +1,5 @@
 package renderer
 
-import "core:image/png"
-
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 

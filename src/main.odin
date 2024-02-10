@@ -1,11 +1,8 @@
 package main
 
 import "core:fmt"
-import "core:log"
 import "core:mem"
 import "core:os"
-
-import "base:runtime"
 
 import JSON "json"
 import LuaRuntime "lua"

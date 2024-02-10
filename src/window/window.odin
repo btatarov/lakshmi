@@ -9,7 +9,6 @@ import "vendor:OpenGL"
 import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 import Renderer "../renderer"
-import Sprite "../renderer/sprite"
 
 OPENGL_VERSION_MAJOR :: 3
 OPENGL_VERSION_MINOR :: 3
@@ -36,8 +35,8 @@ Init :: proc(title : cstring, width, height : i32) {
 
     OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
-    width, height := glfw.GetFramebufferSize(window)
-    Renderer.Init(width, height)
+    fb_width, fb_height := glfw.GetFramebufferSize(window)
+    Renderer.Init(fb_width, fb_height)
 }
 
 Destroy :: proc() {
