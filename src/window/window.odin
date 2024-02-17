@@ -17,6 +17,8 @@ OPENGL_VERSION_MINOR :: 3
 Window :: struct {
     handle: glfw.WindowHandle,
     title:  cstring,
+    frames: i32,
+    time:   f64,
 }
 
 @private window: Window
@@ -72,13 +74,18 @@ MainLoop :: proc() {
 
     log.debugf("LakshmiWindow: MainLoop\n")
 
-    frame_time := 0.0
-    delta_time := 0.0
+    time: f64
+    delta_time: f64
+    frame_time := glfw.GetTime()
     for ! glfw.WindowShouldClose(window.handle) {
         // calculate delta time
-        time := glfw.GetTime()
+        time = glfw.GetTime()
         delta_time = time - frame_time
         frame_time = time
+
+        // update totals
+        window.frames += 1
+        window.time += delta_time
 
         // set window title to show FPS
         title := fmt.ctprintf("%s - FPS: %f", window.title, 1 / delta_time)

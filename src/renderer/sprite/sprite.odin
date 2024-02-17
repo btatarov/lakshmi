@@ -97,7 +97,7 @@ Destroy :: proc(img: ^Sprite) {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "new", _new },
+        { "new",    _new },
         { "getPos", _get_pos },
         { "getRot", _get_rot},
         { "getScl", _get_scl },
