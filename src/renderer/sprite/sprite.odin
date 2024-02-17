@@ -42,20 +42,20 @@ Sprite :: struct {
     render:         proc(img: ^Sprite),
 }
 
-Init :: proc(img: ^Sprite, path: string) {
+Init :: proc(img: ^Sprite, path: cstring) {
     log.debugf("LakshmiSprite: Init: %s\n", path)
 
     img.texture = Texture.Init(path)
 
     // TODO: those should be different in the future
-    img.width, img.height = img.texture.width, img.texture.height
+    img.width, img.height = u32(img.texture.width), u32(img.texture.height)
 
     img.quad = {
         // positions        // colors               // uv coords
-         0.5,  0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     1.0, 0.0, // top right
-         0.5, -0.5, 0.0,    0.0, 1.0, 0.0, 1.0,     1.0, 1.0, // bottom right
-        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     0.0, 1.0, // bottom left
-        -0.5,  0.5, 0.0,    0.0, 0.0, 1.0, 1.0,     0.0, 0.0, // top left
+         0.5,  0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     1.0, 1.0,  // top right
+         0.5, -0.5, 0.0,    0.0, 1.0, 0.0, 1.0,     1.0, 0.0,  // bottom right
+        -0.5, -0.5, 0.0,    0.0, 0.0, 1.0, 1.0,     0.0, 0.0,  // bottom left
+        -0.5,  0.5, 0.0,    1.0, 1.0, 0.0, 1.0,     0.0, 1.0,  // top left
     }
 
     img.indecies = {

@@ -1,28 +1,26 @@
 package texture
 
 import "core:fmt"
-import "core:image/png"
 
 import "vendor:OpenGL"
+import "vendor:stb/image"
 
 Texture :: struct {
-    path:   string,
-    id:     u32,
-    width:  u32,
-    height: u32,
+    path:       string,
+    id:         u32,
+    width:      i32,
+    height:     i32,
+    channels:   i32,
 
     bind:   proc(tex: ^Texture),
     unbind: proc(tex: ^Texture),
 }
 
-Init :: proc(path: string) -> (tex: Texture) {
-    sprite, err := png.load_from_file(path)
-    assert(err == nil , fmt.tprintf("Failed to load texture: %s", path))
-    defer png.destroy(sprite)
-
-    tex.path = path
-    tex.width = u32(sprite.width)
-    tex.height = u32(sprite.height)
+Init :: proc(path: cstring) -> (tex: Texture) {
+    image.set_flip_vertically_on_load(1)
+    data := image.load(path, &tex.width, &tex.height, &tex.channels, 0)
+    assert(data != nil, fmt.tprintf("Failed to load texture: %s", path))
+    defer image.image_free(data)
 
     tex.bind   = texture_bind
     tex.unbind = texture_unbind
@@ -33,8 +31,10 @@ Init :: proc(path: string) -> (tex: Texture) {
     OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_WRAP_T, OpenGL.CLAMP_TO_EDGE)
     OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MIN_FILTER, OpenGL.LINEAR)
     OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MAG_FILTER, OpenGL.NEAREST)
-    OpenGL.TexImage2D(OpenGL.TEXTURE_2D, 0, OpenGL.RGBA, i32(sprite.width), i32(sprite.height), 0, OpenGL.RGBA, OpenGL.UNSIGNED_BYTE, raw_data(sprite.pixels.buf))
+    OpenGL.TexImage2D(OpenGL.TEXTURE_2D, 0, OpenGL.RGBA, i32(tex.width), i32(tex.height), 0, OpenGL.RGBA, OpenGL.UNSIGNED_BYTE, rawptr(data))
     OpenGL.GenerateMipmap(OpenGL.TEXTURE_2D)
+
+    tex.path = string(path)
 
     return
 }
