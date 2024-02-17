@@ -43,6 +43,7 @@ sprite1:setPos(0, 0)
 
 sprite2 = LakshmiSprite.new('test/lakshmi.png')
 sprite2:setPos(0.5, 0.5)
+print('sprite2 pos:', sprite2:getPos())
 
 LakshmiRenderer.add(sprite1)
 LakshmiRenderer.add(sprite2)

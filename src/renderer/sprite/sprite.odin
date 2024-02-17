@@ -68,7 +68,8 @@ Init :: proc(img: ^Sprite, path: string) {
     img.index_buffer = IndexBuffer.Init()
     img.index_buffer->bind(img.indecies[:], len(img.indecies))
 
-    img.model_matrix = f32(1) // identity matrix
+    img.scale = 1
+    img.model_matrix = f32(1)
 
     img.get_position = sprite_get_pos
     img.set_position = sprite_set_pos
@@ -90,6 +91,7 @@ Destroy :: proc(img: ^Sprite) {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new", _new },
+        { "getPos", _get_pos },
         { "setPos", _set_pos },
         { nil, nil },
     }
@@ -131,6 +133,18 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
 
     return 1
+}
+
+_get_pos :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    x, y := sprite.get_position(sprite)
+
+    lua.pushnumber(L, lua.Number(x))
+    lua.pushnumber(L, lua.Number(y))
+
+    return 2
 }
 
 _set_pos :: proc "c" (L: ^lua.State) -> i32 {

@@ -8,6 +8,7 @@ List of available functions:
 
 * LakshmiWindow.open(title, width, height)
 * LakshmiSprite.new(path)
+* LakshmiSprite.getPos(sprite)
 * LakshmiSprite.setPos(sprite, x, y)
 * LakshmiRenderer.add(sprite)
 * LakshmiJSON.decode(json_string)
