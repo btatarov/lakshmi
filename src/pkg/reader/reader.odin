@@ -12,7 +12,7 @@ Package :: struct {
     path:   string,
     offset: u64,
 
-    read_file : proc(pkg: ^Package, file_path: string) -> []byte,
+    read_file: proc(pkg: ^Package, file_path: string) -> []byte,
 }
 
 PackageErr :: enum {

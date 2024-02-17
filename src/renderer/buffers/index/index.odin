@@ -3,8 +3,8 @@ package index
 import "vendor:OpenGL"
 
 IndexBuffer :: struct {
-    id      : u32,
-    count   : i32,
+    id:     u32,
+    count:  i32,
 
     bind    : proc(buffer: ^IndexBuffer, indecies: []u32, count: i32),
     unbind  : proc(buffer: ^IndexBuffer),

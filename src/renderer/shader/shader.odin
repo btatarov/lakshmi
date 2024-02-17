@@ -5,12 +5,12 @@ import "core:math/linalg"
 import "vendor:OpenGL"
 
 Shader :: struct {
-    program : u32,
+    program: u32,
 
-    apply_model         : proc(shader: ^Shader, model: ^linalg.Matrix4f32),
-    apply_projection    : proc(shader: ^Shader, projection: ^linalg.Matrix4f32),
-    bind                : proc(shader: ^Shader),
-    unbind              : proc(_: ^Shader),
+    apply_model:        proc(shader: ^Shader, model: ^linalg.Matrix4f32),
+    apply_projection:   proc(shader: ^Shader, projection: ^linalg.Matrix4f32),
+    bind:               proc(shader: ^Shader),
+    unbind:             proc(_: ^Shader),
 }
 
 Init :: proc() -> (shader: Shader) {

@@ -38,11 +38,11 @@ Chunk :: struct #packed {
 }
 
 Package :: struct {
-    path: string,
-    header: Header,
-    toc: [dynamic]Chunk,
-    data: [dynamic]byte,
-    data_size: u64,
+    path:       string,
+    header:     Header,
+    toc:        [dynamic]Chunk,
+    data:       [dynamic]byte,
+    data_size:  u64,
 }
 
 CRC32 :: proc(pkg: ^Package) -> (crc32: u32) {

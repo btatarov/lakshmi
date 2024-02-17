@@ -4,23 +4,23 @@ import "core:math"
 import "core:math/linalg"
 
 Camera :: struct {
-    projection  : linalg.Matrix4f32,
-    view        : linalg.Matrix4f32,
-    vp          : linalg.Matrix4f32,
-    position    : linalg.Vector3f32,
-    rotation    : f32,
+    projection: linalg.Matrix4f32,
+    view:       linalg.Matrix4f32,
+    vp:         linalg.Matrix4f32,
+    position:   linalg.Vector3f32,
+    rotation:   f32,
 
-    get_position            : proc(camera: ^Camera) -> ^linalg.Vector3f32,
-    get_projection_matrix   : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
-    get_rotation            : proc(camera: ^Camera) -> f32,
-    get_view_matrix         : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
-    get_vp_matrix           : proc(camera: ^Camera) -> ^linalg.Matrix4f32,
+    get_position:           proc(camera: ^Camera) -> ^linalg.Vector3f32,
+    get_projection_matrix:  proc(camera: ^Camera) -> ^linalg.Matrix4f32,
+    get_rotation:           proc(camera: ^Camera) -> f32,
+    get_view_matrix:        proc(camera: ^Camera) -> ^linalg.Matrix4f32,
+    get_vp_matrix:          proc(camera: ^Camera) -> ^linalg.Matrix4f32,
 
-    set_position            : proc(camera: ^Camera, position: linalg.Vector3f32),
-    set_projection_matrix   : proc(camera: ^Camera, left, right, bottom, top: f32),
-    set_rotation            : proc(camera: ^Camera, rotation: f32),
+    set_position:           proc(camera: ^Camera, position: linalg.Vector3f32),
+    set_projection_matrix:  proc(camera: ^Camera, left, right, bottom, top: f32),
+    set_rotation:           proc(camera: ^Camera, rotation: f32),
 
-    update_view_matrix      : proc(camera: ^Camera),
+    update_view_matrix:     proc(camera: ^Camera),
 }
 
 Init :: proc(left, right, bottom, top: f32) -> (camera: Camera) {

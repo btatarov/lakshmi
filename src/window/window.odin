@@ -16,7 +16,7 @@ OPENGL_VERSION_MINOR :: 3
 
 Window :: struct {
     handle: glfw.WindowHandle,
-    title: cstring,
+    title:  cstring,
 }
 
 @private window: Window
