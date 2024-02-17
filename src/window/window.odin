@@ -61,9 +61,19 @@ LuaUnbind :: proc(L: ^lua.State) {
 }
 
 MainLoop :: proc() {
-    log.debugf("LakshmiWindow: MainLoop\n", "test")
+    context = LakshmiContext.GetDefault()  // TODO: we need this evey time we use the logger
 
+    log.debugf("LakshmiWindow: MainLoop\n")
+
+    frame_time := 0.0
+    delta_time := 0.0
     for ! glfw.WindowShouldClose(window) {
+        time := glfw.GetTime()
+        delta_time = time - frame_time
+        frame_time = time
+        // log.debugf("LakshmiWindow: FPS: %f\n", 1 / delta_time)
+        _ = delta_time  // TODO: for now we don't use delta time
+
         Renderer.Render()
 
         glfw.PollEvents()
