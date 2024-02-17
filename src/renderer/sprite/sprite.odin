@@ -27,11 +27,6 @@ Sprite :: struct {
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
-    // TODO: implement scale and rotation
-    // position:       linalg.Vector3f32,
-    // scale:          linalg.Vector3f32,
-    // rotation:       f32,
-    // model_matrix:   linalg.Matrix4f32,
     position:       linalg.Vector3f32,
     scale:          linalg.Vector3f32,
     rotation:       f32,
@@ -40,7 +35,9 @@ Sprite :: struct {
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
+    set_rotation:   proc(img: ^Sprite, angle: f32),
     set_scale:      proc(img: ^Sprite, x, y: f32),
+    get_rotation:   proc(img: ^Sprite) -> f32,
     update_model:   proc(img: ^Sprite),
     render:         proc(img: ^Sprite),
 }
@@ -78,8 +75,10 @@ Init :: proc(img: ^Sprite, path: string) {
     img.model_matrix = f32(1)
 
     img.get_position = sprite_get_position
+    img.get_rotation = sprite_get_rotation
     img.get_scale    = sprite_get_scale
     img.set_position = sprite_set_position
+    img.set_rotation = sprite_set_rotation
     img.set_scale    = sprite_set_scale
     img.update_model = sprite_update_model
     img.render       = sprite_render
@@ -100,8 +99,10 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new", _new },
         { "getPos", _get_pos },
+        { "getRot", _get_rot},
         { "getScl", _get_scl },
         { "setPos", _set_pos },
+        { "setRot", _set_rot },
         { "setScl", _set_scl },
         { nil, nil },
     }
@@ -116,6 +117,10 @@ sprite_get_position :: proc(img: ^Sprite) -> (f32, f32) {
     return img.position.x, img.position.y
 }
 
+sprite_get_rotation :: proc(img: ^Sprite) -> f32 {
+    return img.rotation
+}
+
 sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
     return img.scale.x, img.scale.y
 }
@@ -125,16 +130,21 @@ sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
     img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
 }
 
+sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
+    img.rotation = angle
+    img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
+}
+
 sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
     img.scale = {f32(x), f32(y), 1}
     img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
 }
 
 sprite_update_model :: proc(img: ^Sprite) {
-    _ = math.sin_f32(0)  // TODO: remove
     transform: linalg.Matrix4f32 = 1
     transform *= linalg.matrix4_translate(img.position)
     transform *= linalg.matrix4_scale(img.scale)
+    transform *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
     img.model_matrix = transform
 }
 
@@ -168,6 +178,17 @@ _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     return 2
 }
 
+_get_rot :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    angle := sprite.get_rotation(sprite)
+
+    lua.pushnumber(L, lua.Number(angle))
+
+    return 1
+}
+
 _get_scl :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -187,6 +208,16 @@ _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     x := f32(lua.tonumber(L, -2))
     y := f32(lua.tonumber(L, -1))
     sprite.set_position(sprite, x, y)
+
+    return 0
+}
+
+_set_rot :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -2))
+    angle := f32(lua.tonumber(L, -1))
+    sprite.set_rotation(sprite, angle)
 
     return 0
 }
