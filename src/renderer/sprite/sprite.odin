@@ -28,13 +28,19 @@ Sprite :: struct {
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
     // TODO: implement scale and rotation
+    // position:       linalg.Vector3f32,
+    // scale:          linalg.Vector3f32,
+    // rotation:       f32,
+    // model_matrix:   linalg.Matrix4f32,
     position:       linalg.Vector3f32,
     scale:          linalg.Vector3f32,
     rotation:       f32,
-    model_matrix:   linalg.Matrix4f32,
+    model_matrix:   matrix[4, 4] f32,
 
     get_position:   proc(img: ^Sprite) -> (f32, f32),
+    get_scale:      proc(img: ^Sprite) -> (f32, f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
+    set_scale:      proc(img: ^Sprite, x, y: f32),
     update_model:   proc(img: ^Sprite),
     render:         proc(img: ^Sprite),
 }
@@ -71,10 +77,12 @@ Init :: proc(img: ^Sprite, path: string) {
     img.scale = 1
     img.model_matrix = f32(1)
 
-    img.get_position = sprite_get_pos
-    img.set_position = sprite_set_pos
+    img.get_position = sprite_get_position
+    img.get_scale    = sprite_get_scale
+    img.set_position = sprite_set_position
+    img.set_scale    = sprite_set_scale
     img.update_model = sprite_update_model
-    img.render = sprite_render
+    img.render       = sprite_render
 
     return
 }
@@ -92,7 +100,9 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new", _new },
         { "getPos", _get_pos },
+        { "getScl", _get_scl },
         { "setPos", _set_pos },
+        { "setScl", _set_scl },
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiSprite", &reg_table, __gc)
@@ -102,19 +112,30 @@ LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
 }
 
-sprite_get_pos :: proc(img: ^Sprite) -> (f32, f32) {
+sprite_get_position :: proc(img: ^Sprite) -> (f32, f32) {
     return img.position.x, img.position.y
 }
 
-sprite_set_pos :: proc(img: ^Sprite, x, y: f32) {
-    img.position = {f32(x), f32(y), 0}  // TODO: convert using viewport size
+sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
+    return img.scale.x, img.scale.y
+}
 
+sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
+    img.position = {f32(x), f32(y), 0}  // TODO: convert using viewport size
+    img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
+}
+
+sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
+    img.scale = {f32(x), f32(y), 1}
     img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
 }
 
 sprite_update_model :: proc(img: ^Sprite) {
-    _ = math.to_radians(img.rotation)
-    img.model_matrix = linalg.matrix4_translate(img.position)
+    _ = math.sin_f32(0)  // TODO: remove
+    transform: linalg.Matrix4f32 = 1
+    transform *= linalg.matrix4_translate(img.position)
+    transform *= linalg.matrix4_scale(img.scale)
+    img.model_matrix = transform
 }
 
 sprite_render :: proc(img: ^Sprite) {
@@ -147,6 +168,18 @@ _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     return 2
 }
 
+_get_scl :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    x, y := sprite.get_scale(sprite)
+
+    lua.pushnumber(L, lua.Number(x))
+    lua.pushnumber(L, lua.Number(y))
+
+    return 2
+}
+
 _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -154,6 +187,17 @@ _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     x := f32(lua.tonumber(L, -2))
     y := f32(lua.tonumber(L, -1))
     sprite.set_position(sprite, x, y)
+
+    return 0
+}
+
+_set_scl :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -3))
+    x := f32(lua.tonumber(L, -2))
+    y := f32(lua.tonumber(L, -1))
+    sprite.set_scale(sprite, x, y)
 
     return 0
 }
