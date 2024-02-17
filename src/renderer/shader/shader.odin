@@ -7,6 +7,7 @@ import "vendor:OpenGL"
 Shader :: struct {
     program : u32,
 
+    apply_model         : proc(shader: ^Shader, model: ^linalg.Matrix4f32),
     apply_projection    : proc(shader: ^Shader, projection: ^linalg.Matrix4f32),
     bind                : proc(shader: ^Shader),
     unbind              : proc(_: ^Shader),
@@ -20,6 +21,7 @@ Init :: proc() -> (shader: Shader) {
     assert(ok, "Failed to load and compile shaders.")
     OpenGL.UseProgram(shader.program)
 
+    shader.apply_model      = shader_apply_model
     shader.apply_projection = shader_apply_projection
     shader.bind             = shader_bind
     shader.unbind           = shader_unbind
@@ -29,6 +31,11 @@ Init :: proc() -> (shader: Shader) {
 
 Destroy :: proc(shader: ^Shader) {
     OpenGL.DeleteProgram(shader.program)
+}
+
+shader_apply_model :: proc(shader: ^Shader, model: ^linalg.Matrix4f32) {
+    uniform_location := OpenGL.GetUniformLocation(shader.program, "u_model")
+    OpenGL.UniformMatrix4fv(uniform_location, 1, false, &model[0][0])
 }
 
 shader_apply_projection :: proc(shader: ^Shader, projection: ^linalg.Matrix4f32) {

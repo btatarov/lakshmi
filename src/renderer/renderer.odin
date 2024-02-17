@@ -55,6 +55,7 @@ Render :: proc() {
     main_shader->apply_projection(camera->get_vp_matrix())
 
     for sprite in render_list {
+        main_shader->apply_model(&sprite.model_matrix)
         sprite->render()
     }
 }

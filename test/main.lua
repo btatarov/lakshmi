@@ -39,8 +39,10 @@ LakshmiWindow.open('Lakshmi', 1024, 768)
 
 -- sprite/renderer test
 sprite1 = LakshmiSprite.new('test/lakshmi.png')
-LakshmiRenderer.add(sprite1)
+sprite1:setPos(0, 0)
 
 sprite2 = LakshmiSprite.new('test/lakshmi.png')
-sprite2:setPos(1, 1)
+sprite2:setPos(0.5, 0.5)
+
+LakshmiRenderer.add(sprite1)
 LakshmiRenderer.add(sprite2)

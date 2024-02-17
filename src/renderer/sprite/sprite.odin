@@ -1,6 +1,8 @@
 package sprite
 
 import "core:log"
+import "core:math"
+import "core:math/linalg"
 
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
@@ -15,19 +17,25 @@ import Texture "../texture"
 import LuaRuntime "../../lua"
 
 Sprite :: struct {
-    pos_x:          i32,
-    pos_y:          i32,
     width:          u32,
     height:         u32,
+    texture:        Texture.Texture, // TODO: texture cache?
+
     quad:           [4 * 9] f32,
     indecies:       [2 * 3] u32,
-    texture:        Texture.Texture, // TODO: texture cache?
     index_buffer:   IndexBuffer.IndexBuffer,
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
-    get_position:   proc(img: ^Sprite) -> (i32, i32),
-    set_position:   proc(img: ^Sprite, x, y: i32),
+    // TODO: implement scale and rotation
+    position:       linalg.Vector3f32,
+    scale:          linalg.Vector3f32,
+    rotation:       f32,
+    model_matrix:   linalg.Matrix4f32,
+
+    get_position:   proc(img: ^Sprite) -> (f32, f32),
+    set_position:   proc(img: ^Sprite, x, y: f32),
+    update_model:   proc(img: ^Sprite),
     render:         proc(img: ^Sprite),
 }
 
@@ -39,7 +47,6 @@ Init :: proc(img: ^Sprite, path: string) {
     // TODO: those should be different in the future
     img.width, img.height = img.texture.width, img.texture.height
 
-    // TODO: convert x and y coords
     img.quad = {
         // positions        // colors               // uv coords
          0.5,  0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     1.0, 0.0, // top right
@@ -47,7 +54,6 @@ Init :: proc(img: ^Sprite, path: string) {
         -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     0.0, 1.0, // bottom left
         -0.5,  0.5, 0.0,    0.0, 0.0, 1.0, 1.0,     0.0, 0.0, // top left
     }
-    // sprite_set_pos(&img, 0, 0)
 
     img.indecies = {
         0, 1, 3,
@@ -62,8 +68,11 @@ Init :: proc(img: ^Sprite, path: string) {
     img.index_buffer = IndexBuffer.Init()
     img.index_buffer->bind(img.indecies[:], len(img.indecies))
 
+    img.model_matrix = f32(1) // identity matrix
+
     img.get_position = sprite_get_pos
     img.set_position = sprite_set_pos
+    img.update_model = sprite_update_model
     img.render = sprite_render
 
     return
@@ -91,27 +100,23 @@ LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
 }
 
-sprite_get_pos :: proc(img: ^Sprite) -> (i32, i32) {
-    return img.pos_x, img.pos_y
+sprite_get_pos :: proc(img: ^Sprite) -> (f32, f32) {
+    return img.position.x, img.position.y
 }
 
-sprite_set_pos :: proc(img: ^Sprite, x, y: i32) {
-    img.pos_x, img.pos_y = x, y
-
-    // TODO: test only, convert coordinates and update quad
-    img.quad[0] = 1.0
-    img.quad[1] = 1.0
-    img.quad[9] = 1.0
-    img.quad[10] = 0.0
-    img.quad[18] = 0.0
-    img.quad[19] = 0.0
-    img.quad[27] = 0.0
-    img.quad[28] = 1.0
+sprite_set_pos :: proc(img: ^Sprite, x, y: f32) {
+    img.position = {f32(x), f32(y), 0}  // TODO: convert using viewport size
 
     img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
 }
 
+sprite_update_model :: proc(img: ^Sprite) {
+    _ = math.to_radians(img.rotation)
+    img.model_matrix = linalg.matrix4_translate(img.position)
+}
+
 sprite_render :: proc(img: ^Sprite) {
+    img->update_model()
     img.texture->bind()
     img.vertex_array->bind()
     OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
@@ -128,13 +133,12 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
-
 _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -3))
-    x := i32(lua.tointeger(L, -2))
-    y := i32(lua.tointeger(L, -1))
+    x := f32(lua.tonumber(L, -2))
+    y := f32(lua.tonumber(L, -1))
     sprite.set_position(sprite, x, y)
 
     return 0
