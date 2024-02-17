@@ -53,3 +53,14 @@ print('sprite2 scl:', sprite2:getScl())
 
 LakshmiRenderer.add(sprite1)
 LakshmiRenderer.add(sprite2)
+
+-- stress test without texture cache and batch rendering
+sprites = {}
+for i = 1, 500 do
+    sprites[i] = LakshmiSprite.new('test/lakshmi.png')
+    sprites[i]:setPos(math.random() - 0.5, math.random() - 0.5)
+    sprites[i]:setRot(math.random() * 360 - 180)
+    scl = math.random() * 0.5 + 0.1
+    sprites[i]:setScl(scl, scl)
+    LakshmiRenderer.add(sprites[i])
+end
