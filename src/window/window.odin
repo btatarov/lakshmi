@@ -1,5 +1,6 @@
 package window
 
+import "core:fmt"
 import "core:log"
 
 import "vendor:glfw"
@@ -13,7 +14,12 @@ import Renderer "../renderer"
 OPENGL_VERSION_MAJOR :: 3
 OPENGL_VERSION_MINOR :: 3
 
-window : glfw.WindowHandle
+Window :: struct {
+    handle: glfw.WindowHandle,
+    title: cstring,
+}
+
+@private window: Window
 
 Init :: proc(title : cstring, width, height : i32) {
     log.debugf("LakshmiWindow: Init\n")
@@ -24,18 +30,19 @@ Init :: proc(title : cstring, width, height : i32) {
     glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR)
     glfw.WindowHint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-    window = glfw.CreateWindow(width, height, title, nil, nil)
-    assert(window != nil, "Failed to create GLFW window")
+    window.title = title
+    window.handle = glfw.CreateWindow(width, height, title, nil, nil)
+    assert(window.handle != nil, "Failed to create GLFW window")
 
-    glfw.SetKeyCallback(window, OnKeyboardCallback)
-    glfw.SetFramebufferSizeCallback(window, OnWindowResizeCallback)
+    glfw.SetKeyCallback(window.handle, OnKeyboardCallback)
+    glfw.SetFramebufferSizeCallback(window.handle, OnWindowResizeCallback)
 
-    glfw.MakeContextCurrent(window)
+    glfw.MakeContextCurrent(window.handle)
     glfw.SwapInterval(1)
 
     OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
-    fb_width, fb_height := glfw.GetFramebufferSize(window)
+    fb_width, fb_height := glfw.GetFramebufferSize(window.handle)
     Renderer.Init(fb_width, fb_height)
 }
 
@@ -44,7 +51,7 @@ Destroy :: proc() {
 
     Renderer.Destroy()
 
-    glfw.DestroyWindow(window)
+    glfw.DestroyWindow(window.handle)
     glfw.Terminate()
 }
 
@@ -67,17 +74,19 @@ MainLoop :: proc() {
 
     frame_time := 0.0
     delta_time := 0.0
-    for ! glfw.WindowShouldClose(window) {
+    for ! glfw.WindowShouldClose(window.handle) {
         time := glfw.GetTime()
         delta_time = time - frame_time
         frame_time = time
-        // log.debugf("LakshmiWindow: FPS: %f\n", 1 / delta_time)
-        _ = delta_time  // TODO: for now we don't use delta time
+
+        // set window title to show FPS
+        title := fmt.ctprintf("%s - FPS: %f", window.title, 1 / delta_time)
+        glfw.SetWindowTitle(window.handle, title)
 
         Renderer.Render()
 
         glfw.PollEvents()
-        glfw.SwapBuffers(window)
+        glfw.SwapBuffers(window.handle)
 
         free_all(context.temp_allocator)
     }
