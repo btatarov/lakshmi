@@ -22,8 +22,17 @@ Init :: proc(path: cstring) -> (tex: Texture) {
     assert(data != nil, fmt.tprintf("Failed to load texture: %s", path))
     defer image.image_free(data)
 
-    tex.bind   = texture_bind
-    tex.unbind = texture_unbind
+    internal_fmt: i32
+    data_fmt: u32
+    if tex.channels == 3 {
+        internal_fmt = OpenGL.RGB8
+        data_fmt = OpenGL.RGB
+    } else if tex.channels == 4 {
+        internal_fmt = OpenGL.RGBA8
+        data_fmt = OpenGL.RGBA
+    } else {
+        assert(false, fmt.tprintf("Unsupported number of channels: %d", tex.channels))
+    }
 
     OpenGL.GenTextures(1, &tex.id)
     OpenGL.BindTexture(OpenGL.TEXTURE_2D, tex.id)
@@ -31,10 +40,13 @@ Init :: proc(path: cstring) -> (tex: Texture) {
     OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_WRAP_T, OpenGL.CLAMP_TO_EDGE)
     OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MIN_FILTER, OpenGL.LINEAR)
     OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MAG_FILTER, OpenGL.NEAREST)
-    OpenGL.TexImage2D(OpenGL.TEXTURE_2D, 0, OpenGL.RGBA, i32(tex.width), i32(tex.height), 0, OpenGL.RGBA, OpenGL.UNSIGNED_BYTE, rawptr(data))
+    OpenGL.TexImage2D(OpenGL.TEXTURE_2D, 0, internal_fmt, i32(tex.width), i32(tex.height), 0, data_fmt, OpenGL.UNSIGNED_BYTE, rawptr(data))
     OpenGL.GenerateMipmap(OpenGL.TEXTURE_2D)
 
     tex.path = string(path)
+
+    tex.bind   = texture_bind
+    tex.unbind = texture_unbind
 
     return
 }
