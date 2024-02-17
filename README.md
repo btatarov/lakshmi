@@ -16,5 +16,6 @@ List of available functions:
 * LakshmiSprite.setRot(sprite, angle)
 * LakshmiSprite.setScl(sprite, x, y)
 * LakshmiRenderer.add(sprite)
+* LakshmiRenderer.setClearColor(r, g, b, a)
 * LakshmiJSON.decode(json_string)
 * LakshmiJSON.encode(lua_table)

@@ -18,6 +18,7 @@ import LuaRuntime "../lua"
 Init :: proc(width, height : i32) {
     OpenGL.BlendFunc(OpenGL.SRC_ALPHA, OpenGL.ONE_MINUS_SRC_ALPHA)
     OpenGL.Enable(OpenGL.BLEND)
+    OpenGL.ClearColor(0.0, 0.0, 0.0, 1.0)
 
     // Testing: wireframe mode
     // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
@@ -48,7 +49,6 @@ RefreshViewport :: proc(width, height : i32) {
 }
 
 Render :: proc() {
-    OpenGL.ClearColor(0.3, 0.3, 0.3, 1.0)
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
     main_shader->bind()
@@ -62,7 +62,8 @@ Render :: proc() {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "add", _add },
+        { "add",            _add },
+        { "setClearColor",  _setClearColor},
         { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiRenderer", &reg_table)
@@ -78,6 +79,17 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
     // TODO: remove on __gc or __close?
     sprite := (^Sprite.Sprite)(lua.touserdata(L, -1))
     append(&render_list, sprite)
+
+    return 0
+}
+
+_setClearColor :: proc "c" (L: ^lua.State) -> i32 {
+    r := f32(lua.tonumber(L, 1))
+    g := f32(lua.tonumber(L, 2))
+    b := f32(lua.tonumber(L, 3))
+    a := f32(lua.tonumber(L, 4))
+
+    OpenGL.ClearColor(r, g, b, a)
 
     return 0
 }
