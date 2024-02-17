@@ -11,52 +11,68 @@ import Sprite "sprite"
 
 import LuaRuntime "../lua"
 
-@private camera         : Camera.Camera
-@private main_shader    : Shader.Shader
-@private render_list    : [dynamic]^Sprite.Sprite
+Renderer :: struct {
+    width:  i32,
+    height: i32,
+    ratio:  f32,
+
+    camera:         Camera.Camera,
+    main_shader:    Shader.Shader,
+    render_list:    [dynamic]^Sprite.Sprite,
+}
+
+@private renderer: Renderer
 
 Init :: proc(width, height : i32) {
     OpenGL.BlendFunc(OpenGL.SRC_ALPHA, OpenGL.ONE_MINUS_SRC_ALPHA)
     OpenGL.Enable(OpenGL.BLEND)
     OpenGL.ClearColor(0.0, 0.0, 0.0, 1.0)
 
+    renderer = Renderer {}
+    renderer.width  = width
+    renderer.height = height
+    renderer.ratio  = f32(width) / f32(height)
+
     // Testing: wireframe mode
     // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
 
     // camera
-    ratio := f32(width) / f32(height)
-    camera = Camera.Init(-ratio, ratio, -1, 1)
-    camera->set_position({0.5, 0.5, 0})
-    camera->set_rotation(30)
+    renderer.camera = Camera.Init(-renderer.ratio, renderer.ratio, -1, 1)
+    // TODO: from lua
+    // renderer.camera->set_position({0.5, 0.5, 0})
+    // renderer.camera->set_rotation(30)
 
     // shader
-    main_shader = Shader.Init()
+    renderer.main_shader = Shader.Init()
 
     RefreshViewport(width, height)
-    render_list = make([dynamic]^Sprite.Sprite)
+    renderer.render_list = make([dynamic]^Sprite.Sprite)
 }
 
 Destroy :: proc() {
-    Shader.Destroy(&main_shader)
-    delete(render_list)
+    Shader.Destroy(&renderer.main_shader)
+    delete(renderer.render_list)
 }
 
 RefreshViewport :: proc(width, height : i32) {
     OpenGL.Viewport(0, 0, width, height)
 
-    ratio := f32(width) / f32(height)
-    camera->set_projection_matrix(-ratio, ratio, -1, 1)
+    renderer.width  = width
+    renderer.height = height
+    renderer.ratio  = f32(width) / f32(height)
+
+    renderer.camera->set_projection_matrix(-renderer.ratio, renderer.ratio, -1, 1)
 }
 
 Render :: proc() {
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
-    main_shader->bind()
-    main_shader->apply_projection(camera->get_vp_matrix())
+    renderer.main_shader->bind()
+    renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
 
-    for sprite in render_list {
-        main_shader->apply_model(&sprite.model_matrix)
-        sprite->render()
+    for sprite in renderer.render_list {
+        renderer.main_shader->apply_model(&sprite.model_matrix)
+        sprite->render(renderer.width, renderer.height, renderer.ratio)
     }
 }
 
@@ -78,7 +94,7 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
 
     // TODO: remove on __gc or __close?
     sprite := (^Sprite.Sprite)(lua.touserdata(L, -1))
-    append(&render_list, sprite)
+    append(&renderer.render_list, sprite)
 
     return 0
 }

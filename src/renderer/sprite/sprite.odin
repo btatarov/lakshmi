@@ -19,6 +19,9 @@ import LuaRuntime "../../lua"
 Sprite :: struct {
     width:          u32,
     height:         u32,
+    position:       linalg.Vector3f32,
+    scale:          linalg.Vector3f32,
+    rotation:       f32,
     texture:        Texture.Texture, // TODO: texture cache?
 
     quad:           [4 * 9] f32,
@@ -27,9 +30,7 @@ Sprite :: struct {
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
-    position:       linalg.Vector3f32,
-    scale:          linalg.Vector3f32,
-    rotation:       f32,
+    pos_normalized: linalg.Vector3f32,
     model_matrix:   matrix[4, 4] f32,
 
     get_position:   proc(img: ^Sprite) -> (f32, f32),
@@ -39,7 +40,7 @@ Sprite :: struct {
     set_scale:      proc(img: ^Sprite, x, y: f32),
     get_rotation:   proc(img: ^Sprite) -> f32,
     update_model:   proc(img: ^Sprite),
-    render:         proc(img: ^Sprite),
+    render:         proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
 }
 
 Init :: proc(img: ^Sprite, path: cstring) {
@@ -126,29 +127,32 @@ sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
 }
 
 sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
-    img.position = {f32(x), f32(y), 0}  // TODO: convert using viewport size
-    img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
+    img.position = {f32(x), f32(y), 0}
 }
 
 sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
     img.rotation = angle
-    img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
 }
 
 sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
     img.scale = {f32(x), f32(y), 1}
-    img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
 }
 
 sprite_update_model :: proc(img: ^Sprite) {
     transform: linalg.Matrix4f32 = 1
-    transform *= linalg.matrix4_translate(img.position)
+    transform *= linalg.matrix4_translate(img.pos_normalized)
     transform *= linalg.matrix4_scale(img.scale)
     transform *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
     img.model_matrix = transform
 }
 
-sprite_render :: proc(img: ^Sprite) {
+sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
+    // normalize position
+    img.pos_normalized.x = (img.position.x + f32(screen_width) * 0.5) / f32(screen_width)
+    img.pos_normalized.x = img.pos_normalized.x * screen_ratio * 2 - screen_ratio
+    img.pos_normalized.y = (img.position.y + f32(screen_height) * 0.5) / f32(screen_height)
+    img.pos_normalized.y = img.pos_normalized.y * 2 - 1
+
     img->update_model()
     img.texture->bind()
     img.vertex_array->bind()
