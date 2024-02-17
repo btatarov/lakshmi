@@ -38,7 +38,7 @@ Init :: proc(title : cstring, width, height : i32) {
     glfw.SetFramebufferSizeCallback(window.handle, OnWindowResizeCallback)
 
     glfw.MakeContextCurrent(window.handle)
-    glfw.SwapInterval(1)
+    SetVSync(true)
 
     OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
@@ -75,6 +75,7 @@ MainLoop :: proc() {
     frame_time := 0.0
     delta_time := 0.0
     for ! glfw.WindowShouldClose(window.handle) {
+        // calculate delta time
         time := glfw.GetTime()
         delta_time = time - frame_time
         frame_time = time
@@ -83,12 +84,25 @@ MainLoop :: proc() {
         title := fmt.ctprintf("%s - FPS: %f", window.title, 1 / delta_time)
         glfw.SetWindowTitle(window.handle, title)
 
-        Renderer.Render()
-
+        // handle events
         glfw.PollEvents()
+
+        // TODO: logic
+
+        // render
+        Renderer.Render()
         glfw.SwapBuffers(window.handle)
 
+        // cleanup
         free_all(context.temp_allocator)
+    }
+}
+
+SetVSync :: proc(enabled : bool) {
+    if enabled {
+        glfw.SwapInterval(1)
+    } else {
+        glfw.SwapInterval(0)
     }
 }
 
