@@ -26,6 +26,10 @@ main :: proc() {
                 fmt.printf("%v allocation %p was freed badly\n", bad_free.location, bad_free.memory)
             }
         }
+    } else {
+        // HACK: avoid compile warnings
+        m: mem.Allocator_Error; _ = m
+        n: fmt.Info; _ = n
     }
 
     LakshmiContext.Init()
