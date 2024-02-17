@@ -38,7 +38,6 @@ Init :: proc(title : cstring, width, height : i32) {
     glfw.SetFramebufferSizeCallback(window.handle, OnWindowResizeCallback)
 
     glfw.MakeContextCurrent(window.handle)
-    SetVSync(true)
 
     OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
@@ -57,7 +56,8 @@ Destroy :: proc() {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "open", _open },
+        { "open",       _open },
+        { "setVsync",   _setVsyc },
         { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiWindow", &reg_table)
@@ -98,7 +98,7 @@ MainLoop :: proc() {
     }
 }
 
-SetVSync :: proc(enabled : bool) {
+SetVsync :: proc(enabled : bool) {
     if enabled {
         glfw.SwapInterval(1)
     } else {
@@ -125,6 +125,15 @@ _open :: proc "c" (L: ^lua.State) -> i32 {
     width := i32(lua.L_checkinteger(L, 2))
     height := i32(lua.L_checkinteger(L, 3))
     Init(title, width, height)
+
+    return 0
+}
+
+_setVsyc :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    enabled := bool(lua.toboolean(L, 1))
+    SetVsync(enabled)
 
     return 0
 }

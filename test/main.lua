@@ -36,6 +36,7 @@ print(json)
 
 -- window test
 LakshmiWindow.open('Lakshmi', 1024, 768)
+LakshmiWindow.setVsync(true)
 
 -- sprite/renderer test
 sprite1 = LakshmiSprite.new('test/lakshmi.png')
