@@ -6,8 +6,8 @@ IndexBuffer :: struct {
     id:     u32,
     count:  i32,
 
-    bind    : proc(buffer: ^IndexBuffer, indecies: []u32, count: i32),
-    unbind  : proc(buffer: ^IndexBuffer),
+    bind:   proc(buffer: ^IndexBuffer, indecies: []u32, count: i32),
+    unbind: proc(buffer: ^IndexBuffer),
 }
 
 Init :: proc() -> (buffer : IndexBuffer) {
