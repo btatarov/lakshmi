@@ -79,6 +79,7 @@ Render :: proc() {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "add",            _add },
+        { "clear",          _clear },
         { "setClearColor",  _setClearColor},
         { nil, nil },
     }
@@ -95,6 +96,13 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
     // TODO: remove on __gc or __close?
     sprite := (^Sprite.Sprite)(lua.touserdata(L, -1))
     append(&renderer.render_list, sprite)
+
+    return 0
+}
+
+_clear :: proc "c" (L: ^lua.State) -> i32 {
+    delete(renderer.render_list)
+    renderer.render_list = make([dynamic]^Sprite.Sprite)
 
     return 0
 }
