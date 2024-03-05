@@ -25,14 +25,14 @@ Sprite :: struct {
     visible:        bool,
     texture:        Texture.Texture,
 
-    quad:           [4 * 9] f32,
-    indecies:       [2 * 3] u32,
+    quad:           [4 * 9]f32,
+    indecies:       [2 * 3]u32,
     index_buffer:   IndexBuffer.IndexBuffer,
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
     pos_normalized: linalg.Vector3f32,
-    model_matrix:   matrix[4, 4] f32,
+    model_matrix:   matrix[4, 4]f32,
 
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
