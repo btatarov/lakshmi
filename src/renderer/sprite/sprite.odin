@@ -22,6 +22,7 @@ Sprite :: struct {
     position:       linalg.Vector3f32,
     scale:          linalg.Vector3f32,
     rotation:       f32,
+    visible:        bool,
     texture:        Texture.Texture,
 
     quad:           [4 * 9] f32,
@@ -38,6 +39,7 @@ Sprite :: struct {
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
     set_scale:      proc(img: ^Sprite, x, y: f32),
+    set_visible:    proc(img: ^Sprite, visible: bool),
     get_rotation:   proc(img: ^Sprite) -> f32,
     update_model:   proc(img: ^Sprite),
     render:         proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
@@ -46,6 +48,7 @@ Sprite :: struct {
 Init :: proc(img: ^Sprite, path: cstring) {
     log.debugf("LakshmiSprite: Init: %s\n", path)
 
+    img.visible = true
     img.texture = Texture.Init(path)
 
     // TODO: those should be different in the future
@@ -81,6 +84,7 @@ Init :: proc(img: ^Sprite, path: cstring) {
     img.set_position = sprite_set_position
     img.set_rotation = sprite_set_rotation
     img.set_scale    = sprite_set_scale
+    img.set_visible  = sprite_set_visible
     img.update_model = sprite_update_model
     img.render       = sprite_render
 
@@ -98,13 +102,14 @@ Destroy :: proc(img: ^Sprite) {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "new",    _new },
-        { "getPos", _get_pos },
-        { "getRot", _get_rot},
-        { "getScl", _get_scl },
-        { "setPos", _set_pos },
-        { "setRot", _set_rot },
-        { "setScl", _set_scl },
+        { "new",        _new },
+        { "getPos",     _get_pos },
+        { "getRot",     _get_rot},
+        { "getScl",     _get_scl },
+        { "setPos",     _set_pos },
+        { "setRot",     _set_rot },
+        { "setScl",     _set_scl },
+        { "setVisible", _set_visible },
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiSprite", &reg_table, __gc)
@@ -136,6 +141,10 @@ sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
 
 sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
     img.scale = {f32(x), f32(y), 1}
+}
+
+sprite_set_visible :: proc(img: ^Sprite, visible: bool) {
+    img.visible = visible
 }
 
 sprite_update_model :: proc(img: ^Sprite) {
@@ -174,7 +183,7 @@ _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -1))
-    x, y := sprite.get_position(sprite)
+    x, y := sprite->get_position()
 
     lua.pushnumber(L, lua.Number(x))
     lua.pushnumber(L, lua.Number(y))
@@ -186,7 +195,7 @@ _get_rot :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -1))
-    angle := sprite.get_rotation(sprite)
+    angle := sprite->get_rotation()
 
     lua.pushnumber(L, lua.Number(angle))
 
@@ -197,7 +206,7 @@ _get_scl :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -1))
-    x, y := sprite.get_scale(sprite)
+    x, y := sprite->get_scale()
 
     lua.pushnumber(L, lua.Number(x))
     lua.pushnumber(L, lua.Number(y))
@@ -211,7 +220,7 @@ _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     sprite := (^Sprite)(lua.touserdata(L, -3))
     x := f32(lua.tonumber(L, -2))
     y := f32(lua.tonumber(L, -1))
-    sprite.set_position(sprite, x, y)
+    sprite->set_position(x, y)
 
     return 0
 }
@@ -221,7 +230,7 @@ _set_rot :: proc "c" (L: ^lua.State) -> i32 {
 
     sprite := (^Sprite)(lua.touserdata(L, -2))
     angle := f32(lua.tonumber(L, -1))
-    sprite.set_rotation(sprite, angle)
+    sprite->set_rotation(angle)
 
     return 0
 }
@@ -232,7 +241,16 @@ _set_scl :: proc "c" (L: ^lua.State) -> i32 {
     sprite := (^Sprite)(lua.touserdata(L, -3))
     x := f32(lua.tonumber(L, -2))
     y := f32(lua.tonumber(L, -1))
-    sprite.set_scale(sprite, x, y)
+    sprite->set_scale(x, y)
+
+    return 0
+}
+
+_set_visible :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -2))
+    sprite->set_visible(bool(lua.toboolean(L, -1)))
 
     return 0
 }

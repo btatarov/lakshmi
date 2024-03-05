@@ -15,6 +15,7 @@ List of available functions:
 * LakshmiSprite.setPos(sprite, x, y)
 * LakshmiSprite.setRot(sprite, angle)
 * LakshmiSprite.setScl(sprite, x, y)
+* LakshmiSprite.setVisible(sprite, visible)
 * LakshmiRenderer.add(sprite)
 * LakshmiRenderer.clear()
 * LakshmiRenderer.setClearColor(r, g, b, a)

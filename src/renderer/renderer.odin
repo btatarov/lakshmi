@@ -71,6 +71,9 @@ Render :: proc() {
     renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
 
     for sprite in renderer.render_list {
+        if ! sprite.visible {
+            continue
+        }
         renderer.main_shader->apply_model(&sprite.model_matrix)
         sprite->render(renderer.width, renderer.height, renderer.ratio)
     }
@@ -101,6 +104,8 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
 }
 
 _clear :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
     delete(renderer.render_list)
     renderer.render_list = make([dynamic]^Sprite.Sprite)
 
