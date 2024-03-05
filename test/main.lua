@@ -58,7 +58,7 @@ LakshmiRenderer.add(sprite2)
 
 -- stress test without texture cache and batch rendering
 sprites = {}
-for i = 1, 100 do
+for i = 1, 1000 do
     sprites[i] = LakshmiSprite.new('test/lakshmi.png')
     sprites[i]:setPos(math.random() * 1024 - 1024 / 2, math.random() * 768 - 768 / 2)
     sprites[i]:setRot(math.random() * 360 - 180)

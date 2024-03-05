@@ -22,7 +22,7 @@ Sprite :: struct {
     position:       linalg.Vector3f32,
     scale:          linalg.Vector3f32,
     rotation:       f32,
-    texture:        Texture.Texture, // TODO: texture cache?
+    texture:        Texture.Texture,
 
     quad:           [4 * 9] f32,
     indecies:       [2 * 3] u32,
