@@ -45,7 +45,7 @@ sprite1:setPos(-1024 / 2, 768 / 2)
 sprite1:setRot(0)
 sprite1:setScl(1, 1)
 
-sprite2 = LakshmiSprite.new('test/lakshmi.png')
+sprite2 = LakshmiSprite.new('test/meditate.png')
 sprite2:setPos(250, 250)
 sprite2:setRot(-45)
 sprite2:setScl(0.8, 0.8)

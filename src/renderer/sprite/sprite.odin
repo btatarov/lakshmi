@@ -158,15 +158,19 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     pos_normalized.y = (img.position.y + f32(screen_height) * 0.5) / f32(screen_height)
     pos_normalized.y = pos_normalized.y * 2 - 1
 
+    size_normalized: linalg.Vector3f32
+    size_normalized.x = f32(img.width) / f32(screen_width) * screen_ratio
+    size_normalized.y = f32(img.height) / f32(screen_height)
+
     model_matrix: linalg.Matrix4f32 = 1
     model_matrix *= linalg.matrix4_translate(pos_normalized)
     model_matrix *= linalg.matrix4_scale(img.scale)
     model_matrix *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
 
-    a := model_matrix * linalg.Vector4f32{ 0.5,  0.5, 0.0, 1.0}
-    b := model_matrix * linalg.Vector4f32{ 0.5, -0.5, 0.0, 1.0}
-    c := model_matrix * linalg.Vector4f32{-0.5, -0.5, 0.0, 1.0}
-    d := model_matrix * linalg.Vector4f32{-0.5,  0.5, 0.0, 1.0}
+    a := model_matrix * linalg.Vector4f32{ size_normalized.x,  size_normalized.y, 0.0, 1.0}
+    b := model_matrix * linalg.Vector4f32{ size_normalized.x, -size_normalized.y, 0.0, 1.0}
+    c := model_matrix * linalg.Vector4f32{-size_normalized.x, -size_normalized.y, 0.0, 1.0}
+    d := model_matrix * linalg.Vector4f32{-size_normalized.x,  size_normalized.y, 0.0, 1.0}
 
     img.quad[0]  = a[0]
     img.quad[1]  = a[1]
