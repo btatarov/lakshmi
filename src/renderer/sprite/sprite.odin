@@ -186,7 +186,8 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
-    Init(sprite, "test/lakshmi.png")
+    path := lua.L_checkstring(L, 1)
+    Init(sprite, path)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
 
