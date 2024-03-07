@@ -8,6 +8,7 @@ import "vendor:stb/image"
 Texture :: struct {
     id:         u32,
     ref_count:  u32,
+    slot:       u32,
     width:      i32,
     height:     i32,
     channels:   i32,
@@ -58,6 +59,7 @@ Init :: proc(path: cstring) -> (tex: Texture) {
     OpenGL.GenerateMipmap(OpenGL.TEXTURE_2D)
 
     tex.ref_count = 1
+    tex.slot      = u32(len(texture_cache.textures)) + 1  // 0 is reserved for empty texture
     tex.path      = string(path)
 
     tex.bind   = texture_bind
@@ -74,6 +76,10 @@ Destroy :: proc(tex: ^Texture) {
         delete_key(&texture_cache.textures, string(tex.path))
         OpenGL.DeleteTextures(1, &tex.id)
     }
+}
+
+GetCache :: proc() -> ^map[string]Texture {
+    return &texture_cache.textures
 }
 
 texture_bind :: proc(tex: ^Texture) {

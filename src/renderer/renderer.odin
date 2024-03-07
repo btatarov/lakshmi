@@ -46,7 +46,7 @@ Init :: proc(width, height : i32) {
     // Testing: wireframe mode
     // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
 
-    renderer.VBO = VertexBuffer.Init(BATCH_SIZE * 9 * 4 * size_of(f32))
+    renderer.VBO = VertexBuffer.Init(BATCH_SIZE * 10 * 4 * size_of(f32))
     renderer.VAO = VertexArray.Init()
     renderer.IBO = IndexBuffer.Init(BATCH_SIZE * 6)
 
@@ -82,6 +82,7 @@ Render :: proc() {
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
     renderer.main_shader->bind()
+    renderer.main_shader->apply_textures()
     renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
 
     count := 0
@@ -91,7 +92,7 @@ Render :: proc() {
         }
         sprite->render(renderer.width, renderer.height, renderer.ratio)
 
-        // sprite->update_quad(screen_width, screen_height, screen_ratio)
+        // sprite->update_quad(renderer.width, renderer.height, renderer.ratio)
         count += 1
         if count == BATCH_SIZE {
             // TODO: batch rendering

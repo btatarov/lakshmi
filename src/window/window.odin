@@ -11,8 +11,8 @@ import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 import Renderer "../renderer"
 
-OPENGL_VERSION_MAJOR :: 3
-OPENGL_VERSION_MINOR :: 3
+OPENGL_VERSION_MAJOR :: 4
+OPENGL_VERSION_MINOR :: 1
 
 Window :: struct {
     handle: glfw.WindowHandle,
