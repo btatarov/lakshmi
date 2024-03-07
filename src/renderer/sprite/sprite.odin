@@ -26,28 +26,27 @@ Sprite :: struct {
     texture:        Texture.Texture,
 
     quad:           [4 * 9]f32,
-    indecies:       [2 * 3]u32,
+    indecies:       [2 * 3]u32,  // TODO: remove
+
     index_buffer:   IndexBuffer.IndexBuffer,
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
-    pos_normalized: linalg.Vector3f32,
-    model_matrix:   matrix[4, 4]f32,
-
     get_position:   proc(img: ^Sprite) -> (f32, f32),
+    get_rotation:   proc(img: ^Sprite) -> f32,
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
     set_scale:      proc(img: ^Sprite, x, y: f32),
     set_visible:    proc(img: ^Sprite, visible: bool),
-    get_rotation:   proc(img: ^Sprite) -> f32,
-    update_model:   proc(img: ^Sprite),
     render:         proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
+    update_quad:    proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
 }
 
 Init :: proc(img: ^Sprite, path: cstring) {
     log.debugf("LakshmiSprite: Init: %s\n", path)
 
+    img.scale = 1
     img.visible = true
     img.texture = Texture.Init(path)
 
@@ -67,16 +66,10 @@ Init :: proc(img: ^Sprite, path: cstring) {
         1, 2, 3,
     }
 
-    img.vertex_buffer = VertexBuffer.Init()
-    img.vertex_buffer->bind(img.quad[:], size_of(img.quad))
-
+    img.vertex_buffer = VertexBuffer.Init(4 * 9 * size_of(f32))
     img.vertex_array = VertexArray.Init()
-
-    img.index_buffer = IndexBuffer.Init()
-    img.index_buffer->bind(img.indecies[:], len(img.indecies))
-
-    img.scale = 1
-    img.model_matrix = f32(1)
+    img.index_buffer = IndexBuffer.Init(len(img.indecies))
+    img.index_buffer->add(img.indecies[:], len(img.indecies))
 
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
@@ -85,8 +78,8 @@ Init :: proc(img: ^Sprite, path: cstring) {
     img.set_rotation = sprite_set_rotation
     img.set_scale    = sprite_set_scale
     img.set_visible  = sprite_set_visible
-    img.update_model = sprite_update_model
     img.render       = sprite_render
+    img.update_quad  = sprite_update_quad
 
     return
 }
@@ -147,25 +140,46 @@ sprite_set_visible :: proc(img: ^Sprite, visible: bool) {
     img.visible = visible
 }
 
-sprite_update_model :: proc(img: ^Sprite) {
-    transform: linalg.Matrix4f32 = 1
-    transform *= linalg.matrix4_translate(img.pos_normalized)
-    transform *= linalg.matrix4_scale(img.scale)
-    transform *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
-    img.model_matrix = transform
-}
-
 sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
-    // normalize position
-    img.pos_normalized.x = (img.position.x + f32(screen_width) * 0.5) / f32(screen_width)
-    img.pos_normalized.x = img.pos_normalized.x * screen_ratio * 2 - screen_ratio
-    img.pos_normalized.y = (img.position.y + f32(screen_height) * 0.5) / f32(screen_height)
-    img.pos_normalized.y = img.pos_normalized.y * 2 - 1
+    // TODO: update
+    img->update_quad(screen_width, screen_height, screen_ratio)
+    img.vertex_buffer.pos = 0
+    img.vertex_buffer->add(img.quad[:], size_of(img.quad))
 
-    img->update_model()
     img.texture->bind()
     img.vertex_array->bind()
     OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
+}
+
+sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
+    pos_normalized: linalg.Vector3f32
+    pos_normalized.x = (img.position.x + f32(screen_width) * 0.5) / f32(screen_width)
+    pos_normalized.x = pos_normalized.x * screen_ratio * 2 - screen_ratio
+    pos_normalized.y = (img.position.y + f32(screen_height) * 0.5) / f32(screen_height)
+    pos_normalized.y = pos_normalized.y * 2 - 1
+
+    model_matrix: linalg.Matrix4f32 = 1
+    model_matrix *= linalg.matrix4_translate(pos_normalized)
+    model_matrix *= linalg.matrix4_scale(img.scale)
+    model_matrix *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
+
+    a := model_matrix * linalg.Vector4f32{ 0.5,  0.5, 0.0, 1.0}
+    b := model_matrix * linalg.Vector4f32{ 0.5, -0.5, 0.0, 1.0}
+    c := model_matrix * linalg.Vector4f32{-0.5, -0.5, 0.0, 1.0}
+    d := model_matrix * linalg.Vector4f32{-0.5,  0.5, 0.0, 1.0}
+
+    img.quad[0]  = a[0]
+    img.quad[1]  = a[1]
+    img.quad[2]  = a[2]
+    img.quad[9]  = b[0]
+    img.quad[10] = b[1]
+    img.quad[11] = b[2]
+    img.quad[18] = c[0]
+    img.quad[19] = c[1]
+    img.quad[20] = c[2]
+    img.quad[27] = d[0]
+    img.quad[28] = d[1]
+    img.quad[29] = d[2]
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
