@@ -56,9 +56,9 @@ print('sprite2 scl:', sprite2:getScl())
 LakshmiRenderer.add(sprite1)
 LakshmiRenderer.add(sprite2)
 
--- stress test without batch rendering or frustum culling
+-- stress test
 sprites = {}
-for i = 1, 2000 do
+for i = 1, 600 do
     if i % 2 == 0 then
         sprites[i] = LakshmiSprite.new('test/lakshmi.png')
     else

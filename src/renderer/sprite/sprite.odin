@@ -26,7 +26,8 @@ Sprite :: struct {
     texture:        Texture.Texture,
 
     quad:           [4 * 10]f32,
-    indecies:       [2 * 3]u32,  // TODO: remove
+    indices:        [2 * 3]u32,  // TODO: remove
+    is_dirty:       bool,
 
     index_buffer:   IndexBuffer.IndexBuffer,
     vertex_array:   VertexArray.VertexArray,
@@ -61,15 +62,17 @@ Init :: proc(img: ^Sprite, path: cstring) {
         -0.5,  0.5, 0.0,    1.0, 1.0, 0.0, 1.0,     0.0, 1.0,     0.0,  // top left
     }
 
-    img.indecies = {
+    img.indices = {
         0, 1, 3,
         1, 2, 3,
     }
 
+    img.is_dirty = true
+
     img.vertex_buffer = VertexBuffer.Init(4 * 10 * size_of(f32))
     img.vertex_array = VertexArray.Init()
-    img.index_buffer = IndexBuffer.Init(len(img.indecies))
-    img.index_buffer->add(img.indecies[:], len(img.indecies))
+    img.index_buffer = IndexBuffer.Init(len(img.indices))
+    img.index_buffer->add(img.indices[:], len(img.indices))
 
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
@@ -126,14 +129,17 @@ sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
 
 sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
     img.position = {f32(x), f32(y), 0}
+    img.is_dirty = true
 }
 
 sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
     img.rotation = angle
+    img.is_dirty = true
 }
 
 sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
     img.scale = {f32(x), f32(y), 1}
+    img.is_dirty = true
 }
 
 sprite_set_visible :: proc(img: ^Sprite, visible: bool) {
@@ -141,10 +147,12 @@ sprite_set_visible :: proc(img: ^Sprite, visible: bool) {
 }
 
 sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
-    // TODO: update
-    img->update_quad(screen_width, screen_height, screen_ratio)
-    img.vertex_buffer.pos = 0
-    img.vertex_buffer->add(img.quad[:], size_of(img.quad))
+    if img.is_dirty {
+        img->update_quad(screen_width, screen_height, screen_ratio)
+        img.vertex_buffer.pos = 0
+        img.vertex_buffer->add(img.quad[:], size_of(img.quad))
+        img.is_dirty = false
+    }
 
     // img.texture->bind()
     img.vertex_array->bind()

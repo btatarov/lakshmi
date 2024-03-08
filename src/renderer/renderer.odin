@@ -5,10 +5,6 @@ import "vendor:OpenGL"
 
 import LakshmiContext "../base/context"
 
-import VertexArray "buffers/array"
-import IndexBuffer "buffers/index"
-import VertexBuffer "buffers/vertex"
-
 import Camera "camera"
 import Shader "shader"
 import Sprite "sprite"
@@ -21,10 +17,6 @@ Renderer :: struct {
     width:  i32,
     height: i32,
     ratio:  f32,
-
-    VBO:    VertexBuffer.VertexBuffer,
-    VAO:    VertexArray.VertexArray,
-    IBO:    IndexBuffer.IndexBuffer,
 
     camera:         Camera.Camera,
     main_shader:    Shader.Shader,
@@ -45,10 +37,6 @@ Init :: proc(width, height : i32) {
 
     // Testing: wireframe mode
     // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
-
-    renderer.VBO = VertexBuffer.Init(BATCH_SIZE * 10 * 4 * size_of(f32))
-    renderer.VAO = VertexArray.Init()
-    renderer.IBO = IndexBuffer.Init(BATCH_SIZE * 6)
 
     // camera
     renderer.camera = Camera.Init(-renderer.ratio, renderer.ratio, -1, 1)
@@ -85,19 +73,11 @@ Render :: proc() {
     renderer.main_shader->apply_textures()
     renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
 
-    count := 0
     for sprite in renderer.render_list {
         if ! sprite.visible {
             continue
         }
         sprite->render(renderer.width, renderer.height, renderer.ratio)
-
-        // sprite->update_quad(renderer.width, renderer.height, renderer.ratio)
-        count += 1
-        if count == BATCH_SIZE {
-            // TODO: batch rendering
-            count = 0
-        }
     }
 }
 

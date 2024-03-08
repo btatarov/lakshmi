@@ -7,7 +7,7 @@ IndexBuffer :: struct {
     count:  i32,  // TODO: remove (and also from functions params)
     pos:    i32,
 
-    add:    proc(buffer: ^IndexBuffer, indecies: []u32, count: i32),
+    add:    proc(buffer: ^IndexBuffer, indices: []u32, count: i32),
     bind:   proc(buffer: ^IndexBuffer),
     unbind: proc(buffer: ^IndexBuffer),
 }
@@ -31,10 +31,12 @@ Destroy :: proc(buffer: ^IndexBuffer) {
     OpenGL.DeleteBuffers(1, &buffer.id)
 }
 
-index_buffer_add :: proc(buffer: ^IndexBuffer, indecies: []u32, count: i32) {
+index_buffer_add :: proc(buffer: ^IndexBuffer, indices: []u32, count: i32) {
     OpenGL.BindBuffer(OpenGL.ELEMENT_ARRAY_BUFFER, buffer.id)
-    OpenGL.BufferSubData(OpenGL.ELEMENT_ARRAY_BUFFER, int(buffer.pos), int(count) * size_of(u32), &indecies[0])
-    buffer.pos += count * size_of(u32)
+    OpenGL.BufferSubData(OpenGL.ELEMENT_ARRAY_BUFFER, int(buffer.pos), int(count) * size_of(u32), &indices[0])
+
+    buffer.count += count
+    buffer.pos   += count * size_of(u32)
 }
 
 index_buffer_bind :: proc(buffer: ^IndexBuffer) {
