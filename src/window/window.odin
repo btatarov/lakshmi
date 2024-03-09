@@ -61,6 +61,7 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "open",       _open },
         { "setVsync",   _setVsyc },
+        { "quit",       _quit },
         { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiWindow", &reg_table)
@@ -124,10 +125,6 @@ OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, actio
     context = LakshmiContext.GetDefault()
 
     Keyboard.LuaHandleCallback(key, action)
-
-    if action == glfw.PRESS && key == glfw.KEY_ESCAPE {
-        glfw.SetWindowShouldClose(window, true)
-    }
 }
 
 _open :: proc "c" (L: ^lua.State) -> i32 {
@@ -146,6 +143,12 @@ _setVsyc :: proc "c" (L: ^lua.State) -> i32 {
 
     enabled := bool(lua.toboolean(L, 1))
     SetVsync(enabled)
+
+    return 0
+}
+
+_quit :: proc "c" (L: ^lua.State) -> i32 {
+    glfw.SetWindowShouldClose(window.handle, true)
 
     return 0
 }

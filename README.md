@@ -10,6 +10,7 @@ List of available functions:
 
 * LakshmiWindow.open(title, width, height)
 * LakshmiWindow.setVsync(vsync)
+* LakshmiWindow.quit()
 
 ### Keyboard
 

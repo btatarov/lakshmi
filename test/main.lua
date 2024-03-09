@@ -79,4 +79,7 @@ end
 LakshmiKeyboard.setCallback(function(key, action)
     print('LakshmiKeyboard callback')
     print('key:', key, 'action:', action)
+    if action == 1 and key == 256 then
+        LakshmiWindow.quit()
+    end
 end)
