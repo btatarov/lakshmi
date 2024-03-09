@@ -9,20 +9,25 @@ import LakshmiContext "../../base/context"
 
 import LuaRuntime "../../lua"
 
-KEYBOARD_EVENT :: enum {
-    KEY_DOWN,
-    KEY_UP,
-}
-
 @private callback_ref: i32
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "clearCallback", _clearCallback },
-        { "setCallback",   _setCallback },
+        { "clearCallback",  _clearCallback },
+        { "setCallback",    _setCallback },
         { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiKeyboard", &reg_table)
+
+    // bind constants
+    for name, _ in KEYBOARD_EVENT {
+        lua.pushinteger(L, lua.Integer(KEYBOARD_EVENT(name)))
+        lua.setfield(L, -2, fmt.ctprintf("%s", name))
+    }
+    for name, _ in KEYBOARD_MAP {
+        lua.pushinteger(L, lua.Integer(KEYBOARD_MAP(name)))
+        lua.setfield(L, -2, fmt.ctprintf("%s", name))
+    }
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
@@ -65,6 +70,5 @@ _setCallback :: proc "c" (L: ^lua.State) -> i32 {
     }
 
     callback_ref = lua.L_ref(L, lua.REGISTRYINDEX)
-    fmt.println(callback_ref)
     return 0
 }

@@ -79,7 +79,7 @@ end
 LakshmiKeyboard.setCallback(function(key, action)
     print('LakshmiKeyboard callback')
     print('key:', key, 'action:', action)
-    if action == 1 and key == 256 then
+    if action == LakshmiKeyboard.KEY_PRESS_ACTION and key == LakshmiKeyboard.KEY_ESCAPE then
         LakshmiWindow.quit()
     end
 end)

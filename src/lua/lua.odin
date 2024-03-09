@@ -40,7 +40,6 @@ BindClassMetatable :: proc(L: ^lua.State, name: cstring) {
 }
 
 BindSingleton :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg) {
-    // TODO: const fields, e.g. LakshmiWindow.ON_CLOSE
     lua.newtable(L)
     lua.pushvalue(L, lua.gettop(L))
     lua.setglobal(L, name)
