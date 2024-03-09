@@ -14,7 +14,7 @@ List of available functions:
 
 ### Keyboard
 
-* LakshmiKeyboard.clearCallback(callback)
+* LakshmiKeyboard.clearCallback()
 * LakshmiKeyboard.setCallback(callback)
 
 ### Sprite

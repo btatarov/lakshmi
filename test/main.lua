@@ -75,7 +75,7 @@ for i = 1, 3000 do
     end
 end
 
--- test keyboard
+-- keyboard test
 LakshmiKeyboard.setCallback(function(key, action)
     print('LakshmiKeyboard callback')
     print('key:', key, 'action:', action)
