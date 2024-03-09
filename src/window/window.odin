@@ -7,6 +7,7 @@ import "vendor:glfw"
 import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 
+import Keyboard "../input/keyboard"
 import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 import Renderer "../renderer"
@@ -120,6 +121,10 @@ OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : 
 }
 
 OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, action, mode : i32) {
+    context = LakshmiContext.GetDefault()
+
+    Keyboard.LuaHandleCallback(key, action)
+
     if action == glfw.PRESS && key == glfw.KEY_ESCAPE {
         glfw.SetWindowShouldClose(window, true)
     }

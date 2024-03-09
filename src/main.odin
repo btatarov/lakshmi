@@ -7,6 +7,7 @@ import "core:os"
 import JSON "json"
 import LuaRuntime "lua"
 
+import Keyboard "input/keyboard"
 import LakshmiContext "base/context"
 import Renderer "renderer"
 import Sprite "renderer/sprite"
@@ -35,7 +36,12 @@ main :: proc() {
     LakshmiContext.Init()
     defer LakshmiContext.Destroy()
 
-    L := LuaRuntime.Init()
+    LuaRuntime.Init()
+
+    L := LuaRuntime.GetState()
+
+    Keyboard.LuaBind(L)
+    defer Keyboard.LuaUnbind(L)
 
     Window.LuaBind(L)
     defer Window.LuaUnbind(L)

@@ -74,3 +74,9 @@ for i = 1, 3000 do
         sprites[i]:setVisible(false)
     end
 end
+
+-- test keyboard
+LakshmiKeyboard.setCallback(function(key, action)
+    print('LakshmiKeyboard callback')
+    print('key:', key, 'action:', action)
+end)

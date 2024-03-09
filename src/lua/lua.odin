@@ -6,10 +6,11 @@ import "core:strings"
 
 import lua "vendor:lua/5.4"
 
-Init :: proc() -> (L: ^lua.State) {
-    L = lua.L_newstate()
-    lua.L_openlibs(L)
-    return
+@private LuaState: ^lua.State
+
+Init :: proc() {
+    LuaState = lua.L_newstate()
+    lua.L_openlibs(LuaState)
 }
 
 BindClass :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg, destructor: proc "c" (L: ^lua.State) -> i32) {
@@ -56,6 +57,10 @@ CheckOK :: proc(L: ^lua.State, status: lua.Status) -> bool {
 
 Destroy :: proc(L: ^lua.State) {
     lua.close(L)
+}
+
+GetState :: proc() -> ^lua.State {
+    return LuaState
 }
 
 Run :: proc(L: ^lua.State, args: []string) -> bool {

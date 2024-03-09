@@ -6,8 +6,18 @@ Lakshmi is an OpenGL 2D game engine with Lua scripting written in Odin. Work in 
 
 List of available functions:
 
+### Window
+
 * LakshmiWindow.open(title, width, height)
 * LakshmiWindow.setVsync(vsync)
+
+### Keyboard
+
+* LakshmiKeyboard.clearCallback(callback)
+* LakshmiKeyboard.setCallback(callback)
+
+### Sprite
+
 * LakshmiSprite.new(path)
 * LakshmiSprite.getPos(sprite)
 * LakshmiSprite.getRot(sprite)
@@ -16,8 +26,14 @@ List of available functions:
 * LakshmiSprite.setRot(sprite, angle)
 * LakshmiSprite.setScl(sprite, x, y)
 * LakshmiSprite.setVisible(sprite, visible)
+
+### Renderer
+
 * LakshmiRenderer.add(sprite)
 * LakshmiRenderer.clear()
 * LakshmiRenderer.setClearColor(r, g, b, a)
+
+### JSON
+
 * LakshmiJSON.decode(json_string)
 * LakshmiJSON.encode(lua_table)
