@@ -58,7 +58,7 @@ LakshmiRenderer.add(sprite2)
 
 -- stress test
 sprites = {}
-for i = 1, 600 do
+for i = 1, 3000 do
     if i % 2 == 0 then
         sprites[i] = LakshmiSprite.new('test/lakshmi.png')
     else

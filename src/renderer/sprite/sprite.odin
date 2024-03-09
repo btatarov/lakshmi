@@ -152,9 +152,12 @@ sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_rat
         img.vertex_buffer.pos = 0
         img.vertex_buffer->add(img.quad[:], size_of(img.quad))
         img.is_dirty = false
+    } else {
+        img.vertex_buffer->bind()
     }
 
     // img.texture->bind()
+    img.index_buffer->bind()
     img.vertex_array->bind()
     OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }
