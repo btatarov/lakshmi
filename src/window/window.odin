@@ -27,11 +27,18 @@ Window :: struct {
 Init :: proc(title : cstring, width, height : i32) {
     log.debugf("LakshmiWindow: Init\n")
 
+    glfw.SetErrorCallback(OnErrorCallback)
+
     assert(bool(glfw.Init()), "GLFW init failed")
 
     glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR)
     glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR)
     glfw.WindowHint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+
+    when ODIN_OS == .Darwin {
+        glfw.WindowHint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
+        glfw.WindowHint(glfw.COCOA_RETINA_FRAMEBUFFER, glfw.FALSE)
+    }
 
     window.title = title
     window.handle = glfw.CreateWindow(width, height, title, nil, nil)
@@ -45,7 +52,9 @@ Init :: proc(title : cstring, width, height : i32) {
     OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
     fb_width, fb_height := glfw.GetFramebufferSize(window.handle)
+    fb_scale_x, fb_scale_y := glfw.GetWindowContentScale(window.handle)
     Renderer.Init(fb_width, fb_height)
+    Renderer.RefreshViewport(fb_width / i32(fb_scale_x), fb_height / i32(fb_scale_y))
 }
 
 Destroy :: proc() {
@@ -107,12 +116,16 @@ MainLoop :: proc() {
     }
 }
 
-SetVsync :: proc(enabled : bool) {
-    if enabled {
-        glfw.SwapInterval(1)
-    } else {
-        glfw.SwapInterval(0)
-    }
+OnErrorCallback :: proc "c" (error : i32, description : cstring) {
+    context = LakshmiContext.GetDefault()
+
+    log.errorf("GLFW error: %s\n", description)
+}
+
+OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, action, mode : i32) {
+    context = LakshmiContext.GetDefault()
+
+    Keyboard.LuaHandleCallback(key, action)
 }
 
 OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : i32) {
@@ -121,10 +134,12 @@ OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : 
     Renderer.RefreshViewport(width, height)
 }
 
-OnKeyboardCallback :: proc "c" (window : glfw.WindowHandle, key, scancode, action, mode : i32) {
-    context = LakshmiContext.GetDefault()
-
-    Keyboard.LuaHandleCallback(key, action)
+SetVsync :: proc(enabled : bool) {
+    if enabled {
+        glfw.SwapInterval(1)
+    } else {
+        glfw.SwapInterval(0)
+    }
 }
 
 _open :: proc "c" (L: ^lua.State) -> i32 {
