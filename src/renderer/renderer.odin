@@ -70,7 +70,6 @@ Render :: proc() {
     OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
 
     renderer.main_shader->bind()
-    renderer.main_shader->apply_textures()
     renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
 
     for sprite in renderer.render_list {

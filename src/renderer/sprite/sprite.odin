@@ -25,8 +25,8 @@ Sprite :: struct {
     visible:        bool,
     texture:        Texture.Texture,
 
-    quad:           [4 * 10]f32,
-    indices:        [2 * 3]u32,  // TODO: remove
+    quad:           [4 * 9]f32,
+    indices:        [2 * 3]u32,
     is_dirty:       bool,
 
     index_buffer:   IndexBuffer.IndexBuffer,
@@ -55,11 +55,11 @@ Init :: proc(img: ^Sprite, path: cstring) {
     img.width, img.height = u32(img.texture.width), u32(img.texture.height)
 
     img.quad = {
-        // positions        // colors               // uv coords  // texture index
-         0.5,  0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     1.0, 1.0,     0.0,  // top right
-         0.5, -0.5, 0.0,    0.0, 1.0, 0.0, 1.0,     1.0, 0.0,     0.0,  // bottom right
-        -0.5, -0.5, 0.0,    0.0, 0.0, 1.0, 1.0,     0.0, 0.0,     0.0,  // bottom left
-        -0.5,  0.5, 0.0,    1.0, 1.0, 0.0, 1.0,     0.0, 1.0,     0.0,  // top left
+        // positions        // colors               // uv coords
+         0.5,  0.5, 0.0,    1.0, 0.0, 0.0, 1.0,     1.0, 1.0,  // top right
+         0.5, -0.5, 0.0,    0.0, 1.0, 0.0, 1.0,     1.0, 0.0,  // bottom right
+        -0.5, -0.5, 0.0,    0.0, 0.0, 1.0, 1.0,     0.0, 0.0,  // bottom left
+        -0.5,  0.5, 0.0,    1.0, 1.0, 0.0, 1.0,     0.0, 1.0,  // top left
     }
 
     img.indices = {
@@ -69,7 +69,7 @@ Init :: proc(img: ^Sprite, path: cstring) {
 
     img.is_dirty = true
 
-    img.vertex_buffer = VertexBuffer.Init(4 * 10 * size_of(f32))
+    img.vertex_buffer = VertexBuffer.Init(4 * 9 * size_of(f32))
     img.vertex_array = VertexArray.Init()
     img.index_buffer = IndexBuffer.Init(len(img.indices))
     img.index_buffer->add(img.indices[:], len(img.indices))
@@ -156,9 +156,8 @@ sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_rat
         img.vertex_buffer->bind()
     }
 
-    // img.texture->bind()
-    img.index_buffer->bind()
     img.vertex_array->bind()
+    img.texture->bind()
     OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
 }
 
@@ -187,21 +186,15 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     img.quad[0]  = a[0]
     img.quad[1]  = a[1]
     img.quad[2]  = a[2]
-    img.quad[10] = b[0]
-    img.quad[11] = b[1]
-    img.quad[12] = b[2]
-    img.quad[20] = c[0]
-    img.quad[21] = c[1]
-    img.quad[22] = c[2]
-    img.quad[30] = d[0]
-    img.quad[31] = d[1]
-    img.quad[32] = d[2]
-
-    // set texture index
-    img.quad[9]  = f32(img.texture.slot)
-    img.quad[19] = f32(img.texture.slot)
-    img.quad[29] = f32(img.texture.slot)
-    img.quad[39] = f32(img.texture.slot)
+    img.quad[9]  = b[0]
+    img.quad[10] = b[1]
+    img.quad[11] = b[2]
+    img.quad[18] = c[0]
+    img.quad[19] = c[1]
+    img.quad[20] = c[2]
+    img.quad[27] = d[0]
+    img.quad[28] = d[1]
+    img.quad[29] = d[2]
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
