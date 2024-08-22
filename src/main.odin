@@ -10,6 +10,7 @@ import LuaRuntime "lua"
 import Keyboard "input/keyboard"
 import LakshmiContext "base/context"
 import Renderer "renderer"
+import Layer "renderer/layer"
 import Sprite "renderer/sprite"
 import Window "window"
 
@@ -48,6 +49,9 @@ main :: proc() {
 
     Renderer.LuaBind(L)
     defer Renderer.LuaUnbind(L)
+
+    Layer.LuaBind(L)
+    defer Layer.LuaUnbind(L)
 
     Sprite.LuaBind(L)
     defer Sprite.LuaUnbind(L)

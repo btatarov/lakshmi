@@ -28,9 +28,16 @@ List of available functions:
 * LakshmiSprite.setScl(sprite, x, y)
 * LakshmiSprite.setVisible(sprite, visible)
 
+### Layer
+
+* LakshmiLayer.new()
+* LakshmiLayer.add(sprite)
+* LakshmiLayer.clear()
+* LakshmiLayer.setVisible(visible)
+
 ### Renderer
 
-* LakshmiRenderer.add(sprite)
+* LakshmiRenderer.add(layer)
 * LakshmiRenderer.clear()
 * LakshmiRenderer.setClearColor(r, g, b, a)
 

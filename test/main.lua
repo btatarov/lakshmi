@@ -40,6 +40,9 @@ LakshmiWindow.setVsync(true)
 LakshmiRenderer.setClearColor(0.3, 0.3, 0.3, 1.0)
 
 -- sprite/renderer test
+layer = LakshmiLayer.new()
+LakshmiRenderer.add(layer)
+
 sprite1 = LakshmiSprite.new('test/lakshmi.png')
 sprite1:setPos(-1024 / 2, 768 / 2)
 sprite1:setRot(0)
@@ -53,8 +56,8 @@ print('sprite2 pos:', sprite2:getPos())
 print('sprite2 rot:', sprite2:getRot())
 print('sprite2 scl:', sprite2:getScl())
 
-LakshmiRenderer.add(sprite1)
-LakshmiRenderer.add(sprite2)
+layer:add(sprite1)
+layer:add(sprite2)
 
 -- stress test
 sprites = {}
@@ -68,7 +71,7 @@ for i = 1, 3000 do
     sprites[i]:setRot(math.random() * 360 - 180)
     scl = math.random() * 0.9 + 0.1
     sprites[i]:setScl(scl, scl)
-    LakshmiRenderer.add(sprites[i])
+    layer:add(sprites[i])
 
     if i % 3 == 0 then
         sprites[i]:setVisible(false)

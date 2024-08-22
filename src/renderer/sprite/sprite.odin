@@ -8,13 +8,12 @@ import lua "vendor:lua/5.4"
 import "vendor:OpenGL"
 
 import LakshmiContext "../../base/context"
+import LuaRuntime "../../lua"
 
 import VertexArray "../buffers/array"
 import IndexBuffer "../buffers/index"
 import VertexBuffer "../buffers/vertex"
 import Texture "../texture"
-
-import LuaRuntime "../../lua"
 
 Sprite :: struct {
     width:          u32,
@@ -45,8 +44,6 @@ Sprite :: struct {
 }
 
 Init :: proc(img: ^Sprite, path: cstring) {
-    log.debugf("LakshmiSprite: Init: %s\n", path)
-
     img.scale = 1
     img.visible = true
     img.texture = Texture.Init(path)
@@ -83,8 +80,6 @@ Init :: proc(img: ^Sprite, path: cstring) {
     img.set_visible  = sprite_set_visible
     img.render       = sprite_render
     img.update_quad  = sprite_update_quad
-
-    return
 }
 
 Destroy :: proc(img: ^Sprite) {
@@ -147,6 +142,10 @@ sprite_set_visible :: proc(img: ^Sprite, visible: bool) {
 }
 
 sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
+    if ! img.visible {
+        return
+    }
+
     if img.is_dirty {
         img->update_quad(screen_width, screen_height, screen_ratio)
         img.vertex_buffer.pos = 0

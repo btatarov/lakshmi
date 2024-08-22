@@ -7,7 +7,7 @@ import LakshmiContext "../base/context"
 
 import Camera "camera"
 import Shader "shader"
-import Sprite "sprite"
+import Layer "layer"
 
 import LuaRuntime "../lua"
 
@@ -20,7 +20,7 @@ Renderer :: struct {
 
     camera:         Camera.Camera,
     main_shader:    Shader.Shader,
-    render_list:    [dynamic]^Sprite.Sprite,
+    layer_list:    [dynamic]^Layer.Layer,
 }
 
 @private renderer: Renderer
@@ -48,12 +48,12 @@ Init :: proc(width, height : i32) {
     renderer.main_shader = Shader.Init()
 
     RefreshViewport(width, height)
-    renderer.render_list = make([dynamic]^Sprite.Sprite)
+    renderer.layer_list = make([dynamic]^Layer.Layer)
 }
 
 Destroy :: proc() {
     Shader.Destroy(&renderer.main_shader)
-    delete(renderer.render_list)
+    delete(renderer.layer_list)
 }
 
 RefreshViewport :: proc(width, height : i32) {
@@ -72,11 +72,8 @@ Render :: proc() {
     renderer.main_shader->bind()
     renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
 
-    for sprite in renderer.render_list {
-        if ! sprite.visible {
-            continue
-        }
-        sprite->render(renderer.width, renderer.height, renderer.ratio)
+    for layer in renderer.layer_list {
+        layer->render(renderer.width, renderer.height, renderer.ratio)
     }
 }
 
@@ -98,8 +95,8 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     // TODO: remove on __gc or __close?
-    sprite := (^Sprite.Sprite)(lua.touserdata(L, -1))
-    append(&renderer.render_list, sprite)
+    layer := (^Layer.Layer)(lua.touserdata(L, -1))
+    append(&renderer.layer_list, layer)
 
     return 0
 }
@@ -107,8 +104,8 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
 _clear :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
-    delete(renderer.render_list)
-    renderer.render_list = make([dynamic]^Sprite.Sprite)
+    delete(renderer.layer_list)
+    renderer.layer_list = make([dynamic]^Layer.Layer)
 
     return 0
 }
