@@ -39,6 +39,12 @@ LakshmiWindow.open('Lakshmi', 1024, 768)
 LakshmiWindow.setVsync(true)
 LakshmiRenderer.setClearColor(0.3, 0.3, 0.3, 1.0)
 
+-- camera test
+LakshmiCamera.setPos(15, 15)
+LakshmiCamera.setRot(30)
+print('camera pos:', LakshmiCamera.getPos())
+print('camera rot:', LakshmiCamera.getRot())
+
 -- sprite/renderer test
 layer = LakshmiLayer.new()
 LakshmiRenderer.add(layer)

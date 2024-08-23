@@ -18,7 +18,7 @@ Renderer :: struct {
     height: i32,
     ratio:  f32,
 
-    camera:         Camera.Camera,
+    camera:         ^Camera.Camera,
     main_shader:    Shader.Shader,
     layer_list:    [dynamic]^Layer.Layer,
 }
@@ -38,17 +38,11 @@ Init :: proc(width, height : i32) {
     // Testing: wireframe mode
     // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
 
-    // camera
     renderer.camera = Camera.Init(-renderer.ratio, renderer.ratio, -1, 1)
-    // TODO: from lua
-    // renderer.camera->set_position({0.5, 0.5, 0})
-    // renderer.camera->set_rotation(30)
-
-    // shader
     renderer.main_shader = Shader.Init()
+    renderer.layer_list = make([dynamic]^Layer.Layer)
 
     RefreshViewport(width, height)
-    renderer.layer_list = make([dynamic]^Layer.Layer)
 }
 
 Destroy :: proc() {
@@ -63,6 +57,7 @@ RefreshViewport :: proc(width, height : i32) {
     renderer.height = height
     renderer.ratio  = f32(width) / f32(height)
 
+    renderer.camera->set_screen_size(width, height)
     renderer.camera->set_projection_matrix(-renderer.ratio, renderer.ratio, -1, 1)
 }
 

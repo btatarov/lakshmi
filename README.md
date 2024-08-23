@@ -12,11 +12,6 @@ List of available functions:
 * LakshmiWindow.setVsync(vsync)
 * LakshmiWindow.quit()
 
-### Keyboard
-
-* LakshmiKeyboard.clearCallback()
-* LakshmiKeyboard.setCallback(callback)
-
 ### Sprite
 
 * LakshmiSprite.new(path)
@@ -40,6 +35,16 @@ List of available functions:
 * LakshmiRenderer.add(layer)
 * LakshmiRenderer.clear()
 * LakshmiRenderer.setClearColor(r, g, b, a)
+
+### Camera
+
+* LakshmiCamera.setPos(x, y)
+* LakshmiCamera.setRot(angle)
+
+### Keyboard
+
+* LakshmiKeyboard.clearCallback()
+* LakshmiKeyboard.setCallback(callback)
 
 ### JSON
 

@@ -10,6 +10,7 @@ import LuaRuntime "lua"
 import Keyboard "input/keyboard"
 import LakshmiContext "base/context"
 import Renderer "renderer"
+import Camera "renderer/camera"
 import Layer "renderer/layer"
 import Sprite "renderer/sprite"
 import Window "window"
@@ -49,6 +50,9 @@ main :: proc() {
 
     Renderer.LuaBind(L)
     defer Renderer.LuaUnbind(L)
+
+    Camera.LuaBind(L)
+    defer Camera.LuaUnbind(L)
 
     Layer.LuaBind(L)
     defer Layer.LuaUnbind(L)
