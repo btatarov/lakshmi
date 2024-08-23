@@ -89,6 +89,17 @@ LakshmiKeyboard.setCallback(function(key, action)
     print('LakshmiKeyboard callback')
     print('key:', key, 'action:', action)
     if action == LakshmiKeyboard.KEY_PRESS_ACTION and key == LakshmiKeyboard.KEY_ESCAPE then
+        LakshmiKeyboard.clearCallback()
         LakshmiWindow.quit()
+    end
+end)
+
+-- main loop test
+count = 0
+LakshmiWindow.setLoopCallback(function(delta)
+    print('LakshmiWindow loop callback with delta:', delta)
+    count = count + 1
+    if count == 10 then
+        LakshmiWindow.clearLoopCallback()
     end
 end)

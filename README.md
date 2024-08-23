@@ -9,6 +9,8 @@ List of available functions:
 ### Window
 
 * LakshmiWindow.open(title, width, height)
+* LakshmiWindow.clearLoopCallback()
+* LakshmiWindow.setLoopCallback(callback)
 * LakshmiWindow.setVsync(vsync)
 * LakshmiWindow.quit()
 

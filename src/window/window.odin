@@ -16,13 +16,14 @@ OPENGL_VERSION_MAJOR :: 4
 OPENGL_VERSION_MINOR :: 1
 
 Window :: struct {
-    handle: glfw.WindowHandle,
-    title:  cstring,
-    frames: i32,
-    time:   f64,
+    handle:         glfw.WindowHandle,
+    title:          cstring,
+    frames:         i32,
+    time:           f64,
 }
 
 @private window: Window
+@private loop_callback_ref: i32
 
 Init :: proc(title : cstring, width, height : i32) {
     log.debugf("LakshmiWindow: Init\n")
@@ -68,9 +69,11 @@ Destroy :: proc() {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "open",       _open },
-        { "setVsync",   _setVsyc },
-        { "quit",       _quit },
+        { "open",               _open },
+        { "clearLoopCallback",  _clear_loop_callback },
+        { "setLoopCallback",    _set_loop_callback },
+        { "setVsync",           _setVsyc },
+        { "quit",               _quit },
         { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiWindow", &reg_table)
@@ -105,7 +108,16 @@ MainLoop :: proc() {
         // handle events
         glfw.PollEvents()
 
-        // TODO: logic
+        // logic
+        if loop_callback_ref != lua.REFNIL {
+            L := LuaRuntime.GetState()
+
+            lua.rawgeti(L, lua.REGISTRYINDEX, lua.Integer(loop_callback_ref))
+            lua.pushnumber(L, lua.Number(delta_time))
+
+            status := lua.pcall(L, 1, 0, 0)
+            LuaRuntime.CheckOK(L, lua.Status(status))
+        }
 
         // render
         Renderer.Render()
@@ -149,6 +161,31 @@ _open :: proc "c" (L: ^lua.State) -> i32 {
     width := i32(lua.L_checkinteger(L, 2))
     height := i32(lua.L_checkinteger(L, 3))
     Init(title, width, height)
+
+    return 0
+}
+
+_clear_loop_callback :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    if loop_callback_ref != lua.REFNIL {
+        lua.L_unref(L, lua.REGISTRYINDEX, loop_callback_ref)
+        loop_callback_ref = lua.REFNIL
+    }
+
+    return 0
+}
+
+_set_loop_callback :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    if ! lua.isfunction(L, 1) {
+        log.errorf("LakshmiWindow.setLoopFunc: argument 1 is not a function\n")
+        lua.pop(L, 1)
+        return 0
+    }
+
+    loop_callback_ref = lua.L_ref(L, lua.REGISTRYINDEX)
 
     return 0
 }

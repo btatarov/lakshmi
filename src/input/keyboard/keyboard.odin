@@ -57,6 +57,7 @@ _clearCallback :: proc "c" (L: ^lua.State) -> i32 {
         lua.L_unref(L, lua.REGISTRYINDEX, callback_ref)
         callback_ref = lua.REFNIL
     }
+
     return 0
 }
 
@@ -70,5 +71,6 @@ _setCallback :: proc "c" (L: ^lua.State) -> i32 {
     }
 
     callback_ref = lua.L_ref(L, lua.REGISTRYINDEX)
+
     return 0
 }
