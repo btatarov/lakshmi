@@ -84,8 +84,6 @@ LuaUnbind :: proc(L: ^lua.State) {
 }
 
 MainLoop :: proc() {
-    context = LakshmiContext.GetDefault()  // TODO: we need this evey time we use the logger
-
     log.debugf("LakshmiWindow: MainLoop\n")
 
     time: f64

@@ -16,6 +16,11 @@ import Sprite "renderer/sprite"
 import Window "window"
 
 main :: proc() {
+    LakshmiContext.Init()
+    defer LakshmiContext.Destroy()
+
+    context = LakshmiContext.GetDefault()
+
     when ODIN_DEBUG {
         tracking_allocator: mem.Tracking_Allocator
         mem.tracking_allocator_init(&tracking_allocator, context.allocator)
@@ -34,9 +39,6 @@ main :: proc() {
         m: mem.Allocator_Error; _ = m
         n: fmt.Info; _ = n
     }
-
-    LakshmiContext.Init()
-    defer LakshmiContext.Destroy()
 
     LuaRuntime.Init()
 
