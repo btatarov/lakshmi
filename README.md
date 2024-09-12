@@ -58,6 +58,10 @@ List of available functions:
 
 * LakshmiBox2DBox.new(width, height)
 
+### Circle
+
+* LakshmiBox2DCircle.new(radius)
+
 #### Entity
 
 * LakshmiBox2DEntity.new(polygon)

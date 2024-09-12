@@ -1,3 +1,5 @@
+math.randomseed(os.time())
+
 LakshmiWindow.open('Lakshmi', 1024, 768)
 LakshmiWindow.setVsync(true)
 LakshmiRenderer.setClearColor(0.3, 0.3, 0.3, 1.0)
@@ -30,7 +32,16 @@ layer:add(floor_sprite)
 entities = {}
 for i = 1, 15 do
     for j = 1, 12 do
-        local box = LakshmiBox2DBox.new(15, 15)
+
+        local box = nil
+        local sprite = nil
+
+        local random_pick = math.random(1, 2)
+        if random_pick == 1 then
+            box = LakshmiBox2DBox.new(15, 15)
+        else
+            box = LakshmiBox2DCircle.new(15)
+        end
 
         local crate = LakshmiBox2DEntity.new(box)
         crate:setBodyType(LakshmiBox2DWorld.BODY_TYPE_DYNAMIC)
@@ -39,7 +50,11 @@ for i = 1, 15 do
         crate:setFriction(0.6)
         crate:setRestitution(0.5)
 
-        local sprite = LakshmiSprite.new('test/box2d/crate.png')
+        if random_pick == 1 then
+            sprite = LakshmiSprite.new('test/box2d/crate.png')
+        else
+            sprite = LakshmiSprite.new('test/box2d/ball.png')
+        end
         sprite:setPos(crate:getPos())
         sprite:setRot(crate:getRot())
         layer:add(sprite)

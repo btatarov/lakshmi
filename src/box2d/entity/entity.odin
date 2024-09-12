@@ -11,8 +11,21 @@ import World "../world"
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
+EntityType :: enum {
+    Polygon,
+    Circle,
+}
+
+Primitive :: struct {
+    data: union {
+        b2.Polygon,
+        b2.Circle,
+    },
+    type: EntityType,
+}
+
 Entity :: struct {
-    polygon:    b2.Polygon,
+    primitive:  ^Primitive,
     body:       b2.BodyDef,
     body_id:    b2.BodyId,
     shape:      b2.ShapeDef,
@@ -22,10 +35,10 @@ Entity :: struct {
 
 @private entities: [dynamic]^Entity
 
-Init :: proc(entity: ^Entity, polygon: b2.Polygon) {
+Init :: proc(entity: ^Entity, primitive: ^Primitive) {
     log.debugf("LakshmiBox2DEntity: Init\n")
 
-    entity.polygon = polygon
+    entity.primitive = primitive
 
     entity.body = b2.DefaultBodyDef()
     entity.body.type = .staticBody
@@ -33,7 +46,13 @@ Init :: proc(entity: ^Entity, polygon: b2.Polygon) {
     entity.body_id = b2.CreateBody(World.GetWorld().id, entity.body)
 
     entity.shape = b2.DefaultShapeDef()
-    entity.shape_id = b2.CreatePolygonShape(entity.body_id, entity.shape, entity.polygon)
+
+    switch primitive.type {
+        case .Circle:
+            entity.shape_id = b2.CreateCircleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Circle))
+        case .Polygon:
+            entity.shape_id = b2.CreatePolygonShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Polygon))
+    }
 
     entity.idx = len(entities)
 }
@@ -77,9 +96,9 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     entity := (^Entity)(lua.newuserdata(L, size_of(Entity)))
-    polygon := (^b2.Polygon)(lua.touserdata(L, 1))
+    primitive := (^Primitive)(lua.touserdata(L, 1))
 
-    Init(entity, polygon^)
+    Init(entity, primitive)
 
     append(&entities, entity)
 
