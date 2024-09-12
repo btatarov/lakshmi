@@ -59,6 +59,10 @@ Init :: proc(title : cstring, width, height : i32) {
 }
 
 Destroy :: proc() {
+    if window.handle == nil {
+        return
+    }
+
     log.debugf("LakshmiWindow: Destroy\n")
 
     Renderer.Destroy()
@@ -84,6 +88,10 @@ LuaUnbind :: proc(L: ^lua.State) {
 }
 
 MainLoop :: proc() {
+    if window.handle == nil {
+        return
+    }
+
     log.debugf("LakshmiWindow: MainLoop\n")
 
     time: f64
