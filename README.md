@@ -68,7 +68,7 @@ List of available functions:
 
 #### Entity
 
-* LakshmiBox2DEntity.new(polygon)
+* LakshmiBox2DEntity.new(primitive)
 * LakshmiBox2DEntity.getPos(box)
 * LakshmiBox2DEntity.getRot(box)
 * LakshmiBox2DEntity.getFriction(box)

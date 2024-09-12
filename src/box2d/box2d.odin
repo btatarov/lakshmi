@@ -4,9 +4,9 @@ import lua "vendor:lua/5.4"
 
 import World "world"
 import Entity "entity"
-import Box "shapes/box"
-import Circle "shapes/circle"
-import Capsule "shapes/capsule"
+import Box "primitives/box"
+import Circle "primitives/circle"
+import Capsule "primitives/capsule"
 
 LuaBind :: proc(L: ^lua.State) {
     World.LuaBind(L)
