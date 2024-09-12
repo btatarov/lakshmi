@@ -14,7 +14,7 @@ LakshmiBox2DWorld.setUnitsPerMeter(10)
 LakshmiBox2DWorld.setGravity(0, 9.80665)
 LakshmiBox2DWorld.setUpdateSteps(8)
 
-box = LakshmiBox2DBox.new(50, 50, 1024 / 2, 768 / 2, LakshmiBox2DWorld.BODY_TYPE_DYNAMIC)
+box = LakshmiBox2DBox.new(1024 / 2, 768 / 2, 50, 50, LakshmiBox2DWorld.BODY_TYPE_DYNAMIC)
 box:setPos(100, 100)
 
 count = 0
