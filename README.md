@@ -54,15 +54,15 @@ List of available functions:
 * LakshmiBox2DWorld.setUnitsPerMeter(upm)
 * LakshmiBox2DWorld.setUpdateSteps(steps)
 
-### Box
+#### Box
 
 * LakshmiBox2DBox.new(width, height)
 
-### Circle
+#### Circle
 
 * LakshmiBox2DCircle.new(radius)
 
-### Capsule
+#### Capsule
 
 * LakshmiBox2DCapsule.new(radius, height)
 
