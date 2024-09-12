@@ -1,6 +1,7 @@
 package box2d_box
 
 import "core:log"
+import "core:math"
 
 import b2 "vendor:box2d"
 import lua "vendor:lua/5.4"
@@ -51,7 +52,9 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new",         _new },
         { "getPos",      _getPos },
+        { "getRot",      _getRot },
         { "setPos",      _setPos },
+        { "setRot",      _setRot },
         { "setBodyType", _setBodyType },
         { nil, nil },
     }
@@ -95,6 +98,17 @@ _getPos :: proc "c" (L: ^lua.State) -> i32 {
     return 2
 }
 
+_getRot :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    box := (^Box)(lua.touserdata(L, -1))
+    angle := math.to_degrees(b2.Rot_GetAngle(b2.Body_GetRotation(box.body_id)))
+
+    lua.pushnumber(L, lua.Number(angle))
+
+    return 1
+}
+
 _setPos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -103,6 +117,18 @@ _setPos :: proc "c" (L: ^lua.State) -> i32 {
     y := f32(lua.tonumber(L, -1))
 
     box.body.position = { x, y }
+    b2.Body_SetTransform(box.body_id, box.body.position, box.body.rotation)
+
+    return 0
+}
+
+_setRot :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    box := (^Box)(lua.touserdata(L, -2))
+    angle := f32(lua.tonumber(L, -1))
+
+    box.body.rotation = b2.MakeRot(math.to_radians(angle))
     b2.Body_SetTransform(box.body_id, box.body.position, box.body.rotation)
 
     return 0
