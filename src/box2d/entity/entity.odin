@@ -14,12 +14,14 @@ import LuaRuntime "../../lua"
 EntityType :: enum {
     Polygon,
     Circle,
+    Capsule,
 }
 
 Primitive :: struct {
     data: union {
         b2.Polygon,
         b2.Circle,
+        b2.Capsule,
     },
     type: EntityType,
 }
@@ -48,10 +50,12 @@ Init :: proc(entity: ^Entity, primitive: ^Primitive) {
     entity.shape = b2.DefaultShapeDef()
 
     switch primitive.type {
-        case .Circle:
-            entity.shape_id = b2.CreateCircleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Circle))
         case .Polygon:
             entity.shape_id = b2.CreatePolygonShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Polygon))
+        case .Circle:
+            entity.shape_id = b2.CreateCircleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Circle))
+        case .Capsule:
+            entity.shape_id = b2.CreateCapsuleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Capsule))
     }
 
     entity.idx = len(entities)

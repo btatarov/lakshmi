@@ -6,12 +6,14 @@ import World "world"
 import Entity "entity"
 import Box "shapes/box"
 import Circle "shapes/circle"
+import Capsule "shapes/capsule"
 
 LuaBind :: proc(L: ^lua.State) {
     World.LuaBind(L)
     Entity.LuaBind(L)
     Box.LuaBind(L)
     Circle.LuaBind(L)
+    Capsule.LuaBind(L)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
@@ -19,4 +21,5 @@ LuaUnbind :: proc(L: ^lua.State) {
     Entity.LuaUnbind(L)
     Box.LuaUnbind(L)
     Circle.LuaUnbind(L)
+    Capsule.LuaUnbind(L)
 }
