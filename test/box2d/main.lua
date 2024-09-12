@@ -27,11 +27,11 @@ floor_sprite:setPos(- 1024 / 2 + x, 768 / 2 - y)
 layer:add(floor_sprite)
 
 boxes = {}
-for i = 1, 8 do
-    for j = 1, 4 do
-        local box = LakshmiBox2DBox.new(35, 35)
+for i = 1, 15 do
+    for j = 1, 12 do
+        local box = LakshmiBox2DBox.new(15, 15)
         box:setBodyType(LakshmiBox2DWorld.BODY_TYPE_DYNAMIC)
-        box:setPos(60 + 120 * (i - 1), 80 + 120 * (j - 1))
+        box:setPos(50 + 65 * (i - 1), 50 + 55 * (j - 1))
         box:setRot(math.random() * 360)
         box:setFriction(0.6)
         box:setRestitution(0.5)
