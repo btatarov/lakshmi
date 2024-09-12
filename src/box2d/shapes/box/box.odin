@@ -22,14 +22,14 @@ Box :: struct {
 
 @private boxes: [dynamic]^Box
 
-Init :: proc(box: ^Box, x, y, w, h : f32, body_type: b2.BodyType) {
+Init :: proc(box: ^Box, w, h : f32) {
     log.debugf("LakshmiBox2DBox: Init\n")
 
     box.polygon = b2.MakeBox(w, h)
 
     box.body = b2.DefaultBodyDef()
-    box.body.type = body_type
-    box.body.position = { x, y }
+    box.body.type = .staticBody
+    box.body.position = { 0, 0 }
     box.body_id = b2.CreateBody(World.GetWorld().id, box.body)
 
     box.shape = b2.DefaultShapeDef()
@@ -71,13 +71,10 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     box := (^Box)(lua.newuserdata(L, size_of(Box)))
-    x := f32(lua.tonumber(L, 1))
-    y := f32(lua.tonumber(L, 2))
-    w := f32(lua.tonumber(L, 3))
-    h := f32(lua.tonumber(L, 4))
-    body_type := lua.tonumber(L, 5)
+    w := f32(lua.tonumber(L, 1))
+    h := f32(lua.tonumber(L, 2))
 
-    Init(box, x, y, w, h, b2.BodyType(body_type))
+    Init(box, w, h)
 
     append(&boxes, box)
 

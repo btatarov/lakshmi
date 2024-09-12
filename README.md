@@ -56,7 +56,7 @@ List of available functions:
 
 #### Box
 
-* LakshmiBox2DBox.new(x, y, width, height, body_type)
+* LakshmiBox2DBox.new(x, y)
 * LakshmiBox2DBox.getPos(box)
 * LakshmiBox2DBox.getRot(box)
 * LakshmiBox2DBox.setPos(box, x, y)
