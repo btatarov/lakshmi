@@ -64,7 +64,7 @@ List of available functions:
 
 #### Capsule
 
-* LakshmiBox2DCapsule.new(radius, height)
+* LakshmiBox2DCapsule.new(radius, x1, y1, x2, y2)
 
 #### Entity
 
