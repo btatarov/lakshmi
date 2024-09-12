@@ -50,12 +50,16 @@ Destroy :: proc(box: ^Box) {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "new",         _new },
-        { "getPos",      _getPos },
-        { "getRot",      _getRot },
-        { "setPos",      _setPos },
-        { "setRot",      _setRot },
-        { "setBodyType", _setBodyType },
+        { "new",            _new },
+        { "getPos",         _getPos },
+        { "getRot",         _getRot },
+        { "getRestitution", _getRestitution },
+        { "getFriction",    _getFriction },
+        { "setPos",         _setPos },
+        { "setRot",         _setRot },
+        { "setFriction",    _setFriction },
+        { "setRestitution", _setRestitution },
+        { "setBodyType",    _setBodyType },
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiBox2DBox", &reg_table, __gc)
@@ -106,6 +110,28 @@ _getRot :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
+_getRestitution :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    box := (^Box)(lua.touserdata(L, -1))
+    restitution := b2.Shape_GetRestitution(box.shape_id)
+
+    lua.pushnumber(L, lua.Number(restitution))
+
+    return 1
+}
+
+_getFriction :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    box := (^Box)(lua.touserdata(L, -1))
+    friction := b2.Shape_GetFriction(box.shape_id)
+
+    lua.pushnumber(L, lua.Number(friction))
+
+    return 1
+}
+
 _setPos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -127,6 +153,30 @@ _setRot :: proc "c" (L: ^lua.State) -> i32 {
 
     box.body.rotation = b2.MakeRot(math.to_radians(angle))
     b2.Body_SetTransform(box.body_id, box.body.position, box.body.rotation)
+
+    return 0
+}
+
+_setRestitution :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    box := (^Box)(lua.touserdata(L, -2))
+    restitution := f32(lua.tonumber(L, -1))
+
+    box.shape.restitution = restitution
+    b2.Shape_SetRestitution(box.shape_id, box.shape.restitution)
+
+    return 0
+}
+
+_setFriction :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    box := (^Box)(lua.touserdata(L, -2))
+    friction := f32(lua.tonumber(L, -1))
+
+    box.shape.friction = friction
+    b2.Shape_SetFriction(box.shape_id, box.shape.friction)
 
     return 0
 }

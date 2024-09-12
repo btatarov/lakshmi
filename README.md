@@ -59,8 +59,12 @@ List of available functions:
 * LakshmiBox2DBox.new(x, y)
 * LakshmiBox2DBox.getPos(box)
 * LakshmiBox2DBox.getRot(box)
+* LakshmiBox2DBox.getFriction(box)
+* LakshmiBox2DBox.getRestitution(box)
 * LakshmiBox2DBox.setPos(box, x, y)
 * LakshmiBox2DBox.setRot(box, angle)
+* LakshmiBox2DBox.setFriction(box, friction)
+* LakshmiBox2DBox.setRestitution(box, restitution)
 * LakshmiBox2DBox.setBodyType(box, body_type)
 
 ### Keyboard
