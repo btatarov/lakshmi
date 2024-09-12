@@ -44,6 +44,8 @@ Sprite :: struct {
 }
 
 Init :: proc(img: ^Sprite, path: cstring) {
+    log.debugf("LakshmiSprite: Init\n")
+
     img.scale = 1
     img.visible = true
     img.texture = Texture.Init(path)

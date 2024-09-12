@@ -15,6 +15,8 @@ import Layer "renderer/layer"
 import Sprite "renderer/sprite"
 import Window "window"
 
+import Box2D "box2d"
+
 main :: proc() {
     LakshmiContext.Init()
     defer LakshmiContext.Destroy()
@@ -61,6 +63,9 @@ main :: proc() {
 
     Sprite.LuaBind(L)
     defer Sprite.LuaUnbind(L)
+
+    Box2D.LuaBind(L)
+    defer Box2D.LuaUnbind(L)
 
     JSON.LuaBind(L)
     defer JSON.LuaUnbind(L)
