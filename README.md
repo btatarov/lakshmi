@@ -54,18 +54,22 @@ List of available functions:
 * LakshmiBox2DWorld.setUnitsPerMeter(upm)
 * LakshmiBox2DWorld.setUpdateSteps(steps)
 
-#### Box
+### Box
 
-* LakshmiBox2DBox.new(x, y)
-* LakshmiBox2DBox.getPos(box)
-* LakshmiBox2DBox.getRot(box)
-* LakshmiBox2DBox.getFriction(box)
-* LakshmiBox2DBox.getRestitution(box)
-* LakshmiBox2DBox.setPos(box, x, y)
-* LakshmiBox2DBox.setRot(box, angle)
-* LakshmiBox2DBox.setFriction(box, friction)
-* LakshmiBox2DBox.setRestitution(box, restitution)
-* LakshmiBox2DBox.setBodyType(box, body_type)
+* LakshmiBox2DBox.new(width, height)
+
+#### Entity
+
+* LakshmiBox2DEntity.new(polygon)
+* LakshmiBox2DEntity.getPos(box)
+* LakshmiBox2DEntity.getRot(box)
+* LakshmiBox2DEntity.getFriction(box)
+* LakshmiBox2DEntity.getRestitution(box)
+* LakshmiBox2DEntity.setPos(box, x, y)
+* LakshmiBox2DEntity.setRot(box, angle)
+* LakshmiBox2DEntity.setFriction(box, friction)
+* LakshmiBox2DEntity.setRestitution(box, restitution)
+* LakshmiBox2DEntity.setBodyType(box, body_type)
 
 ### Keyboard
 

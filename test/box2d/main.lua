@@ -17,7 +17,8 @@ LakshmiBox2DWorld.setUnitsPerMeter(100)
 LakshmiBox2DWorld.setGravity(0, -9.80665)
 LakshmiBox2DWorld.setUpdateSteps(8)
 
-floor = LakshmiBox2DBox.new(700, 35)
+floor_box = LakshmiBox2DBox.new(700, 35)
+floor = LakshmiBox2DEntity.new(floor_box)
 floor:setBodyType(LakshmiBox2DWorld.BODY_TYPE_STATIC)
 floor:setPos(0, - 768 / 2 + 35)
 
@@ -26,30 +27,32 @@ floor_sprite = LakshmiSprite.new('test/box2d/floor.png')
 floor_sprite:setPos(x, y)
 layer:add(floor_sprite)
 
-boxes = {}
+entities = {}
 for i = 1, 15 do
     for j = 1, 12 do
         local box = LakshmiBox2DBox.new(15, 15)
-        box:setBodyType(LakshmiBox2DWorld.BODY_TYPE_DYNAMIC)
-        box:setPos(- 1024 / 2 + 50 + 65 * (i - 1), 768 / 2 - (50 + 55 * (j - 1)))
-        box:setRot(math.random() * 360)
-        box:setFriction(0.6)
-        box:setRestitution(0.5)
+
+        local crate = LakshmiBox2DEntity.new(box)
+        crate:setBodyType(LakshmiBox2DWorld.BODY_TYPE_DYNAMIC)
+        crate:setPos(- 1024 / 2 + 50 + 65 * (i - 1), 768 / 2 - (50 + 55 * (j - 1)))
+        crate:setRot(math.random() * 360)
+        crate:setFriction(0.6)
+        crate:setRestitution(0.5)
 
         local sprite = LakshmiSprite.new('test/box2d/crate.png')
-        sprite:setPos(box:getPos())
-        sprite:setRot(box:getRot())
+        sprite:setPos(crate:getPos())
+        sprite:setRot(crate:getRot())
         layer:add(sprite)
 
-        table.insert(boxes, {box = box, sprite = sprite})
+        table.insert(entities, {entity = crate, sprite = sprite})
     end
 end
 
 LakshmiWindow.setLoopCallback(function(delta)
     LakshmiBox2DWorld.update(delta)
 
-    for _, box in ipairs(boxes) do
-        box.sprite:setPos(box.box:getPos())
-        box.sprite:setRot(box.box:getRot())
+    for _, entity in ipairs(entities) do
+        entity.sprite:setPos(entity.entity:getPos())
+        entity.sprite:setRot(entity.entity:getRot())
     end
 end)
