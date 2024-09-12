@@ -43,6 +43,24 @@ List of available functions:
 * LakshmiCamera.setPos(x, y)
 * LakshmiCamera.setRot(angle)
 
+### Box2D
+
+#### World
+
+* LakshmiBox2DWorld.init()
+* LakshmiBox2DWorld.destroy()
+* LakshmiBox2DWorld.update(dt)
+* LakshmiBox2DWorld.setGravity(x, y)
+* LakshmiBox2DWorld.setUnitsPerMeter(upm)
+* LakshmiBox2DWorld.setUpdateSteps(steps)
+
+#### Box
+
+* LakshmiBox2DBox.new(x, y, width, height, body_type)
+* LakshmiBox2DBox.getPos(box)
+* LakshmiBox2DBox.setPos(box, x, y)
+* LakshmiBox2DBox.setBodyType(box, body_type)
+
 ### Keyboard
 
 * LakshmiKeyboard.clearCallback()
