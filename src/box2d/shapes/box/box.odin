@@ -34,6 +34,8 @@ Init :: proc(box: ^Box, w, h : f32) {
 
     box.shape = b2.DefaultShapeDef()
     box.shape_id = b2.CreatePolygonShape(box.body_id, box.shape, box.polygon)
+
+    box.idx = len(boxes)
 }
 
 Destroy :: proc(box: ^Box) {
@@ -43,7 +45,7 @@ Destroy :: proc(box: ^Box) {
     b2.DestroyBody(box.body_id)
 
     ordered_remove(&boxes, box.idx)
-    for i in box.idx..<len(boxes) {
+    for i in box.idx+1..<len(boxes) {
         boxes[i].idx -= 1
     }
 }
