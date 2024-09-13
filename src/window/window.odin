@@ -23,7 +23,7 @@ Window :: struct {
 }
 
 @private window: Window
-@private loop_callback_ref: i32
+@private loop_callback_ref: i32 = lua.REFNIL
 
 Init :: proc(title : cstring, width, height : i32) {
     log.debugf("LakshmiWindow: Init\n")
@@ -74,8 +74,8 @@ Destroy :: proc() {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "open",               _open },
-        { "clearLoopCallback",  _clear_loop_callback },
-        { "setLoopCallback",    _set_loop_callback },
+        { "clearLoopCallback",  _clearLoopCallback },
+        { "setLoopCallback",    _setLoopCallback },
         { "setVsync",           _setVsyc },
         { "quit",               _quit },
         { nil, nil },
@@ -171,7 +171,7 @@ _open :: proc "c" (L: ^lua.State) -> i32 {
     return 0
 }
 
-_clear_loop_callback :: proc "c" (L: ^lua.State) -> i32 {
+_clearLoopCallback :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     if loop_callback_ref != lua.REFNIL {
@@ -182,7 +182,7 @@ _clear_loop_callback :: proc "c" (L: ^lua.State) -> i32 {
     return 0
 }
 
-_set_loop_callback :: proc "c" (L: ^lua.State) -> i32 {
+_setLoopCallback :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     if ! lua.isfunction(L, 1) {
