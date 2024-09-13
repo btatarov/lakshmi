@@ -75,16 +75,20 @@ Destroy :: proc(entity: ^Entity) {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "new",            _new },
-        { "getPos",         _getPos },
-        { "getRot",         _getRot },
-        { "getRestitution", _getRestitution },
-        { "getFriction",    _getFriction },
-        { "setPos",         _setPos },
-        { "setRot",         _setRot },
-        { "setFriction",    _setFriction },
-        { "setRestitution", _setRestitution },
-        { "setBodyType",    _setBodyType },
+        { "new",                _new },
+        { "getPos",             _getPos },
+        { "getRot",             _getRot },
+        { "getFriction",        _getFriction },
+        { "getRestitution",     _getRestitution },
+        { "getLinearVelocity",  _getLinearVelocity },
+        { "getAngularVelocity", _getAngularVelocity },
+        { "setPos",             _setPos },
+        { "setRot",             _setRot },
+        { "setFriction",        _setFriction },
+        { "setRestitution",     _setRestitution },
+        { "setLinearVelocity",  _setLinearVelocity },
+        { "setAngularVelocity", _setAngularVelocity },
+        { "setBodyType",        _setBodyType },
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiBox2DEntity", &reg_table, __gc)
@@ -134,6 +138,17 @@ _getRot :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
+_getFriction :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    friction := b2.Shape_GetFriction(entity.shape_id)
+
+    lua.pushnumber(L, lua.Number(friction))
+
+    return 1
+}
+
 _getRestitution :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -145,13 +160,25 @@ _getRestitution :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
-_getFriction :: proc "c" (L: ^lua.State) -> i32 {
+_getLinearVelocity :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     entity := (^Entity)(lua.touserdata(L, -1))
-    friction := b2.Shape_GetFriction(entity.shape_id)
+    v := b2.Body_GetLinearVelocity(entity.body_id)
 
-    lua.pushnumber(L, lua.Number(friction))
+    lua.pushnumber(L, lua.Number(v.x))
+    lua.pushnumber(L, lua.Number(v.y))
+
+    return 2
+}
+
+_getAngularVelocity :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    v := b2.Body_GetAngularVelocity(entity.body_id)
+
+    lua.pushnumber(L, lua.Number(v))
 
     return 1
 }
@@ -181,6 +208,18 @@ _setRot :: proc "c" (L: ^lua.State) -> i32 {
     return 0
 }
 
+_setFriction :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -2))
+    friction := f32(lua.tonumber(L, -1))
+
+    entity.shape.friction = friction
+    b2.Shape_SetFriction(entity.shape_id, entity.shape.friction)
+
+    return 0
+}
+
 _setRestitution :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -193,14 +232,25 @@ _setRestitution :: proc "c" (L: ^lua.State) -> i32 {
     return 0
 }
 
-_setFriction :: proc "c" (L: ^lua.State) -> i32 {
+_setLinearVelocity :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -3))
+    x := f32(lua.tonumber(L, -2))
+    y := f32(lua.tonumber(L, -1))
+
+    b2.Body_SetLinearVelocity(entity.body_id, { x, y })
+
+    return 0
+}
+
+_setAngularVelocity :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     entity := (^Entity)(lua.touserdata(L, -2))
-    friction := f32(lua.tonumber(L, -1))
+    angle := f32(lua.tonumber(L, -1))
 
-    entity.shape.friction = friction
-    b2.Shape_SetFriction(entity.shape_id, entity.shape.friction)
+    b2.Body_SetAngularVelocity(entity.body_id, math.to_radians(angle))
 
     return 0
 }

@@ -63,11 +63,21 @@ for i = 1, 15 do
     end
 end
 
+frames = 0
 LakshmiWindow.setLoopCallback(function(delta)
     LakshmiBox2DWorld.update(delta)
 
     for _, entity in ipairs(entities) do
         entity.sprite:setPos(entity.entity:getPos())
         entity.sprite:setRot(entity.entity:getRot())
+    end
+
+    frames = frames + 1
+    if frames == 60 * 3 then
+        for i = 1, 10 do
+            entity = entities[math.random(1, #entities)]
+            entity.entity:setLinearVelocity(math.random(-10, 10) * 1000, math.random(-10, 10) * 1000)
+            entity.entity:setAngularVelocity(math.random(-10, 10) * 10)
+        end
     end
 end)
