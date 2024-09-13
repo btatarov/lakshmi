@@ -56,7 +56,7 @@ List of available functions:
 
 #### Box
 
-* LakshmiBox2DBox.new(width, height)
+* LakshmiBox2DBox.new(width, height, radius)
 
 #### Capsule
 

@@ -10,10 +10,16 @@ import Box2DEntity "../../entity"
 import LakshmiContext "../../../base/context"
 import LuaRuntime "../../../lua"
 
-Init :: proc(primitive: ^Box2DEntity.Primitive, w, h: f32) {
+Init :: proc(primitive: ^Box2DEntity.Primitive, width, height, radius: f32) {
     log.debugf("LakshmiBox2DBox: Init\n")
 
-    box := b2.MakeBox(w, h)
+    box: b2.Polygon
+    if radius != 0 {
+        box = b2.MakeRoundedBox(width, height, radius)
+    }
+    else {
+        box = b2.MakeBox(width, height)
+    }
 
     primitive.data = box
     primitive.type = .Polygon
@@ -39,10 +45,11 @@ _init :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     primitive := (^Box2DEntity.Primitive)(lua.newuserdata(L, size_of(Box2DEntity.Primitive)))
-    w := lua.tonumber(L, 1)
-    h := lua.tonumber(L, 2)
+    width  := lua.tonumber(L, 1)
+    height := lua.tonumber(L, 2)
+    radius := lua.tonumber(L, 3)
 
-    Init(primitive, f32(w), f32(h))
+    Init(primitive, f32(width), f32(height), f32(radius))
 
     LuaRuntime.BindClassMetatable(L, "LakshmiBox2DBox")
 
