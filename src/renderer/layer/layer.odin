@@ -18,6 +18,8 @@ Layer :: struct {
 }
 
 Init :: proc(layer: ^Layer) {
+    log.debugf("LakshmiLayer: Init\n")
+
     layer.visible = true
     layer.sprite_list = make([dynamic]^Sprite.Sprite)
 
@@ -27,6 +29,7 @@ Init :: proc(layer: ^Layer) {
 
 Destroy :: proc(layer: ^Layer) {
     log.debugf("LakshmiLayer: Destroy\n")
+
     delete(layer.sprite_list)
 }
 

@@ -7,6 +7,7 @@ import "core:os"
 import JSON "json"
 import LuaRuntime "lua"
 
+import Audio "audio"
 import Keyboard "input/keyboard"
 import LakshmiContext "base/context"
 import Renderer "renderer"
@@ -45,6 +46,9 @@ main :: proc() {
     LuaRuntime.Init()
 
     L := LuaRuntime.GetState()
+
+    Audio.LuaBind(L)
+    defer Audio.LuaUnbind(L)
 
     Keyboard.LuaBind(L)
     defer Keyboard.LuaUnbind(L)

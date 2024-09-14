@@ -92,6 +92,27 @@ List of available functions:
 * LakshmiKeyboard.clearCallback()
 * LakshmiKeyboard.setCallback(callback)
 
+### Audio
+
+#### System
+
+* LakshmiAudioSystem.init()
+* LakshmiAudioSystem.destroy()
+* LakshmiAudioSystem.add(channel)
+* LakshmiAudioSystem.clear()
+
+#### Channel
+
+* LakshmiAudioChannel.new(is_streamed)
+* LakshmiAudioChannel.add(channel, name, path)
+* LakshmiAudioChannel.play(channel, name)
+* LakshmiAudioChannel.pause(channel)
+* LakshmiAudioChannel.stop(channel)
+* LakshmiAudioChannel.setVolume(channel, volume)
+* LakshmiAudioChannel.setPan(channel, pan)
+* LakshmiAudioChannel.setLoop(channel, loop)
+* LakshmiAudioChannel.clear(channel)
+
 ### JSON
 
 * LakshmiJSON.decode(json_string)
