@@ -11,7 +11,7 @@ import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
 World :: struct {
-    entities:   [dynamic]^Entity.Entity,
+    entities:   map[b2.ShapeId]^Entity.Entity,
     def:        b2.WorldDef,
     id:         b2.WorldId,
     steps:      i32,
@@ -33,7 +33,7 @@ Init :: proc() {
         world.steps = 4
     }
     world.is_active = true
-    world.entities = make([dynamic]^Entity.Entity)
+    world.entities = make(map[b2.ShapeId]^Entity.Entity)
 }
 
 Destroy :: proc () {
@@ -44,7 +44,7 @@ Destroy :: proc () {
     }
 
     world.is_active = false
-    for &entity in world.entities {
+    for _, &entity in world.entities {
         Entity.Destroy(entity)
     }
     delete(world.entities)
@@ -69,10 +69,29 @@ LuaBind :: proc(L: ^lua.State) {
     lua.setfield(L, -2, "BODY_TYPE_KINEMATIC")
     lua.pushinteger(L, lua.Integer(b2.BodyType.dynamicBody))
     lua.setfield(L, -2, "BODY_TYPE_DYNAMIC")
+    lua.pushinteger(L, lua.Integer(Entity.CollisionEventType.Begin))
+    lua.setfield(L, -2, "COLLISION_EVENT_BEGIN")
+    lua.pushinteger(L, lua.Integer(Entity.CollisionEventType.End))
+    lua.setfield(L, -2, "COLLISION_EVENT_END")
+    lua.pushinteger(L, lua.Integer(Entity.CollisionEventType.Hit))
+    lua.setfield(L, -2, "COLLISION_EVENT_HIT")
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
     Destroy()
+}
+
+HandleCollision :: proc(entity_a, entity_b: ^Entity.Entity, type: Entity.CollisionEventType) {
+    event := Entity.CollisionEvent{
+        self = world.entities[entity_a.shape_id],
+        other = world.entities[entity_b.shape_id],
+        type = type,
+    }
+    event.self->handle_collision(event)
+
+    event.self = world.entities[entity_b.shape_id]
+    event.other = world.entities[entity_a.shape_id]
+    event.self->handle_collision(event)
 }
 
 _init :: proc "c" (L: ^lua.State) -> i32 {
@@ -92,12 +111,29 @@ _destroy :: proc "c" (L: ^lua.State) -> i32 {
 }
 
 _update :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
     step := lua.tonumber(L, 1)
 
     if world.is_active {
         b2.World_Step(world.id, f32(step), world.steps)
 
-        // contact_events := b2.World_GetContactEvents(world.id)
+        contact_events := b2.World_GetContactEvents(world.id)
+        for idx in 0..<contact_events.beginCount {
+            entity_a := world.entities[contact_events.beginEvents[idx].shapeIdA]
+            entity_b := world.entities[contact_events.beginEvents[idx].shapeIdB]
+            HandleCollision(entity_a, entity_b, .Begin)
+        }
+        for idx in 0..<contact_events.endCount {
+            entity_a := world.entities[contact_events.endEvents[idx].shapeIdA]
+            entity_b := world.entities[contact_events.endEvents[idx].shapeIdB]
+            HandleCollision(entity_a, entity_b, .End)
+        }
+        for idx in 0..<contact_events.hitCount {
+            entity_a := world.entities[contact_events.hitEvents[idx].shapeIdA]
+            entity_b := world.entities[contact_events.hitEvents[idx].shapeIdB]
+            HandleCollision(entity_a, entity_b, .Hit)
+        }
     }
 
     return 0

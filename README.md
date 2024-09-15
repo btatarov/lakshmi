@@ -96,6 +96,8 @@ List of available functions:
 * LakshmiBox2DEntity.setLinearVelocity(box, x, y)
 * LakshmiBox2DEntity.setAngularVelocity(box, angle)
 * LakshmiBox2DEntity.setBodyType(box, body_type)
+* LakshmiBox2DEntity.setCollisionCallback(box, callback)
+* LakshmiBox2DEntity.clearCollisionCallback(box)
 
 ### Keyboard
 

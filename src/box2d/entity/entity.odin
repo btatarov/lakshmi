@@ -1,7 +1,10 @@
 package box2d_entity
 
+import "core:crypto"
 import "core:log"
 import "core:math"
+import "core:strings"
+import "core:encoding/uuid"
 
 import b2 "vendor:box2d"
 import lua "vendor:lua/5.4"
@@ -9,31 +12,7 @@ import lua "vendor:lua/5.4"
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
-EntityType :: enum {
-    Polygon,
-    Circle,
-    Capsule,
-}
-
-Primitive :: struct {
-    data: union {
-        b2.Polygon,
-        b2.Circle,
-        b2.Capsule,
-    },
-    type: EntityType,
-}
-
-Entity :: struct {
-    primitive:  ^Primitive,
-    body:       b2.BodyDef,
-    body_id:    b2.BodyId,
-    shape:      b2.ShapeDef,
-    shape_id:   b2.ShapeId,
-    idx:        int,
-}
-
-@private entities: ^[dynamic]^Entity
+@private entities: ^map[b2.ShapeId]^Entity
 @private world_id: b2.WorldId
 
 Init :: proc(entity: ^Entity, primitive: ^Primitive, is_sensor: bool) {
@@ -58,7 +37,13 @@ Init :: proc(entity: ^Entity, primitive: ^Primitive, is_sensor: bool) {
             entity.shape_id = b2.CreateCapsuleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Capsule))
     }
 
-    entity.idx = len(entities)
+    entity.handle_collision = entity_handle_collision
+    entity.collision_callbalck_ref = lua.REFNIL
+
+    {
+        context.random_generator = crypto.random_generator()
+        entity.unique_id = uuid.to_string(uuid.generate_v4())
+    }
 }
 
 Destroy :: proc(entity: ^Entity) {
@@ -67,39 +52,39 @@ Destroy :: proc(entity: ^Entity) {
     b2.DestroyShape(entity.shape_id)
     b2.DestroyBody(entity.body_id)
 
-    ordered_remove(entities, entity.idx)
-    for i in entity.idx+1..<len(entities) {
-        entities[i].idx -= 1
-    }
+    delete_key(entities, entity.shape_id)
 }
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "new",                 _new },
-        { "enable",              _enable },
-        { "disable",             _disable },
-        { "isEnabled",           _isEnabled },
-        { "isBullet",            _isBullet },
-        { "isSensor",            _isSensor },
-        { "applyForce",          _applyForce },
-        { "applyLinearImpulse",  _applyLinearImpulse },
-        { "applyAngularImpulse", _applyAngularImpulse },
-        { "applyTorque",         _applyTorque },
-        { "getPos",              _getPos },
-        { "getRot",              _getRot },
-        { "getFriction",         _getFriction },
-        { "getRestitution",      _getRestitution },
-        { "getLinearVelocity",   _getLinearVelocity },
-        { "getAngularVelocity",  _getAngularVelocity },
-        { "getBodyType",         _getBodyType },
-        { "setBullet",           _setBullet },
-        { "setPos",              _setPos },
-        { "setRot",              _setRot },
-        { "setFriction",         _setFriction },
-        { "setRestitution",      _setRestitution },
-        { "setLinearVelocity",   _setLinearVelocity },
-        { "setAngularVelocity",  _setAngularVelocity },
-        { "setBodyType",         _setBodyType },
+        { "new",                    _new },
+        { "enable",                 _enable },
+        { "disable",                _disable },
+        { "isEnabled",              _isEnabled },
+        { "isBullet",               _isBullet },
+        { "isSensor",               _isSensor },
+        { "applyForce",             _applyForce },
+        { "applyLinearImpulse",     _applyLinearImpulse },
+        { "applyAngularImpulse",    _applyAngularImpulse },
+        { "applyTorque",            _applyTorque },
+        { "getPos",                 _getPos },
+        { "getRot",                 _getRot },
+        { "getFriction",            _getFriction },
+        { "getRestitution",         _getRestitution },
+        { "getLinearVelocity",      _getLinearVelocity },
+        { "getAngularVelocity",     _getAngularVelocity },
+        { "getBodyType",            _getBodyType },
+        { "getUniqueID",            _getUniqueID },
+        { "setBullet",              _setBullet },
+        { "setPos",                 _setPos },
+        { "setRot",                 _setRot },
+        { "setFriction",            _setFriction },
+        { "setRestitution",         _setRestitution },
+        { "setLinearVelocity",      _setLinearVelocity },
+        { "setAngularVelocity",     _setAngularVelocity },
+        { "setBodyType",            _setBodyType },
+        { "setCollisionCallback",   _setCollisionCallback },
+        { "clearCollisionCallback", _clearCollisionCallback },
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiBox2DEntity", &reg_table, __gc)
@@ -109,7 +94,7 @@ LuaUnbind :: proc(L: ^lua.State) {
     // Empty
 }
 
-SetWorldRef :: proc(id: b2.WorldId, entities_ref: ^[dynamic]^Entity) {
+SetWorldRef :: proc(id: b2.WorldId, entities_ref: ^map[b2.ShapeId]^Entity) {
     world_id = id
     entities = entities_ref
 }
@@ -118,6 +103,22 @@ UnsetWorldRef :: proc() {
     world_id.index1 = 0
     world_id.revision = 0
     entities = nil
+}
+
+entity_handle_collision :: proc(entity: ^Entity, event: CollisionEvent) {
+    if entity.collision_callbalck_ref != lua.REFNIL {
+        L := LuaRuntime.GetState()
+
+        lua.rawgeti(L, lua.REGISTRYINDEX, lua.Integer(entity.collision_callbalck_ref))
+        lua.pushstring(L, strings.clone_to_cstring(event.other.unique_id, context.temp_allocator))
+        lua.pushinteger(L, lua.Integer(event.type))
+
+        status := lua.pcall(L, 2, 0, 0)
+        if ! LuaRuntime.CheckOK(L, lua.Status(status)) {
+            log.errorf("LakshmiBox2DEntity: collision callback failed: %s\n", lua.tostring(L, -1))
+            lua.pop(L, 1)
+        }
+    }
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
@@ -131,7 +132,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 
     Init(entity, primitive, bool(is_sensor))
 
-    append(entities, entity)
+    entities[entity.shape_id] = entity
 
     LuaRuntime.BindClassMetatable(L, "LakshmiBox2DEntity")
 
@@ -322,6 +323,16 @@ _getBodyType :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
+_getUniqueID :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+
+    lua.pushstring(L, strings.clone_to_cstring(entity.unique_id, context.temp_allocator))
+
+    return 1
+}
+
 _setBullet :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -413,6 +424,34 @@ _setBodyType :: proc "c" (L: ^lua.State) -> i32 {
 
     entity.body.type = b2.BodyType(body_type)
     b2.Body_SetType(entity.body_id, entity.body.type)
+
+    return 0
+}
+
+_setCollisionCallback :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+    if ! lua.isfunction(L, 2) {
+        log.errorf("LakshmiKeyboard.setCallback: argument 1 is not a function\n")
+        lua.pop(L, 1)
+        return 0
+    }
+
+    entity.collision_callbalck_ref = lua.L_ref(L, lua.REGISTRYINDEX)
+
+    return 0
+}
+
+_clearCollisionCallback :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+
+    if entity.collision_callbalck_ref != lua.REFNIL {
+        lua.L_unref(L, lua.REGISTRYINDEX, entity.collision_callbalck_ref)
+        entity.collision_callbalck_ref = lua.REFNIL
+    }
 
     return 0
 }
