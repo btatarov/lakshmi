@@ -72,7 +72,7 @@ List of available functions:
 
 #### Entity
 
-* LakshmiBox2DEntity.new(primitive)
+* LakshmiBox2DEntity.new(primitive, sensor)
 * LakshmiBox2DEntity.enable(box)
 * LakshmiBox2DEntity.disable(box)
 * LakshmiBox2DEntity.isEnabled(box)

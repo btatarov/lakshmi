@@ -37,7 +37,7 @@ Entity :: struct {
 
 @private entities: [dynamic]^Entity
 
-Init :: proc(entity: ^Entity, primitive: ^Primitive) {
+Init :: proc(entity: ^Entity, primitive: ^Primitive, is_sensor: bool) {
     log.debugf("LakshmiBox2DEntity: Init\n")
 
     entity.primitive = primitive
@@ -48,6 +48,7 @@ Init :: proc(entity: ^Entity, primitive: ^Primitive) {
     entity.body_id = b2.CreateBody(World.GetWorld().id, entity.body)
 
     entity.shape = b2.DefaultShapeDef()
+    entity.shape.isSensor = is_sensor
 
     switch primitive.type {
         case .Polygon:
@@ -80,6 +81,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "disable",             _disable },
         { "isEnabled",           _isEnabled },
         { "isBullet",            _isBullet },
+        { "isSensor",            _isSensor },
         { "applyForce",          _applyForce },
         { "applyLinearImpulse",  _applyLinearImpulse },
         { "applyAngularImpulse", _applyAngularImpulse },
@@ -115,8 +117,9 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 
     entity := (^Entity)(lua.newuserdata(L, size_of(Entity)))
     primitive := (^Primitive)(lua.touserdata(L, 1))
+    is_sensor := lua.isboolean(L, 2) && lua.toboolean(L, 2)
 
-    Init(entity, primitive)
+    Init(entity, primitive, bool(is_sensor))
 
     append(&entities, entity)
 
@@ -161,6 +164,17 @@ _isBullet :: proc "c" (L: ^lua.State) -> i32 {
     is_bullet := b2.Body_IsBullet(entity.body_id)
 
     lua.pushboolean(L, b32(is_bullet))
+
+    return 1
+}
+
+_isSensor :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+    is_sensor := b2.Shape_IsSensor(entity.shape_id)
+
+    lua.pushboolean(L, b32(is_sensor))
 
     return 1
 }
