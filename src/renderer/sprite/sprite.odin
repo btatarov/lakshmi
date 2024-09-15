@@ -43,12 +43,12 @@ Sprite :: struct {
     update_quad:    proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
 }
 
-Init :: proc(img: ^Sprite, path: cstring) {
+Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     log.debugf("LakshmiSprite: Init\n")
 
     img.scale = 1
     img.visible = true
-    img.texture = Texture.Init(path)
+    img.texture = texture^
 
     // TODO: those should be different in the future
     img.width, img.height = u32(img.texture.width), u32(img.texture.height)
@@ -203,7 +203,9 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 
     sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
     path := lua.L_checkstring(L, 1)
-    Init(sprite, path)
+
+    texture := Texture.Init(path)
+    Init(sprite, &texture)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
 
