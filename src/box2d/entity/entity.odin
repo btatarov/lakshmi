@@ -76,6 +76,9 @@ Destroy :: proc(entity: ^Entity) {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new",                _new },
+        { "enable",             _enable },
+        { "disable",            _disable },
+        { "isEnabled",          _isEnabled },
         { "getPos",             _getPos },
         { "getRot",             _getRot },
         { "getFriction",        _getFriction },
@@ -112,6 +115,35 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     append(&entities, entity)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiBox2DEntity")
+
+    return 1
+}
+
+_enable :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    b2.Body_Enable(entity.body_id)
+
+    return 0
+}
+
+_disable :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    b2.Body_Disable(entity.body_id)
+
+    return 0
+}
+
+_isEnabled :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    is_disabled := b2.Body_IsEnabled(entity.body_id)
+
+    lua.pushboolean(L, b32(is_disabled))
 
     return 1
 }

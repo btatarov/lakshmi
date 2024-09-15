@@ -73,6 +73,9 @@ List of available functions:
 #### Entity
 
 * LakshmiBox2DEntity.new(primitive)
+* LakshmiBox2DEntity.enable(box)
+* LakshmiBox2DEntity.disable(box)
+* LakshmiBox2DEntity.isEnabled(box)
 * LakshmiBox2DEntity.getPos(box)
 * LakshmiBox2DEntity.getRot(box)
 * LakshmiBox2DEntity.getFriction(box)
