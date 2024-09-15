@@ -5,7 +5,7 @@ import "core:math"
 import "core:math/linalg"
 
 import lua "vendor:lua/5.4"
-import "vendor:OpenGL"
+import gl "vendor:OpenGL"
 
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
@@ -159,7 +159,7 @@ sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_rat
 
     img.vertex_array->bind()
     img.texture->bind()
-    OpenGL.DrawElements(OpenGL.TRIANGLES, img.index_buffer.count, OpenGL.UNSIGNED_INT, nil)
+    gl.DrawElements(gl.TRIANGLES, img.index_buffer.count, gl.UNSIGNED_INT, nil)
 }
 
 sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {

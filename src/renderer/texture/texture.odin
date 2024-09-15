@@ -3,7 +3,7 @@ package render_texture
 import "core:fmt"
 import "core:strings"
 
-import "vendor:OpenGL"
+import gl "vendor:OpenGL"
 import "vendor:stb/image"
 
 Texture :: struct {
@@ -66,23 +66,23 @@ InitInternal :: proc(tex: ^Texture, identifier: string, data: rawptr) {
     internal_fmt: i32
     data_fmt: u32
     if tex.channels == 3 {
-        internal_fmt = OpenGL.RGB8
-        data_fmt = OpenGL.RGB
+        internal_fmt = gl.RGB8
+        data_fmt = gl.RGB
     } else if tex.channels == 4 {
-        internal_fmt = OpenGL.RGBA8
-        data_fmt = OpenGL.RGBA
+        internal_fmt = gl.RGBA8
+        data_fmt = gl.RGBA
     } else {
         assert(false, fmt.tprintf("Unsupported number of channels: %d", tex.channels))
     }
 
-    OpenGL.GenTextures(1, &tex.id)
-    OpenGL.BindTexture(OpenGL.TEXTURE_2D, tex.id)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_WRAP_S, OpenGL.CLAMP_TO_EDGE)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_WRAP_T, OpenGL.CLAMP_TO_EDGE)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MIN_FILTER, OpenGL.LINEAR)
-    OpenGL.TexParameteri(OpenGL.TEXTURE_2D, OpenGL.TEXTURE_MAG_FILTER, OpenGL.NEAREST)
-    OpenGL.TexImage2D(OpenGL.TEXTURE_2D, 0, internal_fmt, i32(tex.width), i32(tex.height), 0, data_fmt, OpenGL.UNSIGNED_BYTE, data)
-    OpenGL.GenerateMipmap(OpenGL.TEXTURE_2D)
+    gl.GenTextures(1, &tex.id)
+    gl.BindTexture(gl.TEXTURE_2D, tex.id)
+    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.TexImage2D(gl.TEXTURE_2D, 0, internal_fmt, i32(tex.width), i32(tex.height), 0, data_fmt, gl.UNSIGNED_BYTE, data)
+    gl.GenerateMipmap(gl.TEXTURE_2D)
 
     tex.ref_count  = 1
     tex.slot       = u32(len(texture_cache.textures)) + 1  // 0 is reserved for empty texture
@@ -98,7 +98,7 @@ Destroy :: proc(tex: ^Texture) {
     tex.ref_count -= 1
     if tex.ref_count == 0 {
         delete_key(&texture_cache.textures, tex.identifier)
-        OpenGL.DeleteTextures(1, &tex.id)
+        gl.DeleteTextures(1, &tex.id)
     }
 }
 
@@ -107,10 +107,10 @@ texture_bind :: proc(tex: ^Texture) {
         return
     }
     texture_cache.bound_texture = tex.id
-    OpenGL.BindTexture(OpenGL.TEXTURE_2D, tex.id)
+    gl.BindTexture(gl.TEXTURE_2D, tex.id)
 }
 
 texture_unbind :: proc(_: ^Texture) {
     texture_cache.bound_texture = 0
-    OpenGL.BindTexture(OpenGL.TEXTURE_2D, 0)
+    gl.BindTexture(gl.TEXTURE_2D, 0)
 }

@@ -1,6 +1,6 @@
 package renderer_vertex_buffer
 
-import "vendor:OpenGL"
+import gl "vendor:OpenGL"
 
 VertexBuffer :: struct {
     id:     u32,
@@ -12,9 +12,9 @@ VertexBuffer :: struct {
 }
 
 Init :: proc(size: int) -> (buffer : VertexBuffer) {
-    OpenGL.GenBuffers(1, &buffer.id)
-    OpenGL.BindBuffer(OpenGL.ARRAY_BUFFER, buffer.id)
-    OpenGL.BufferData(OpenGL.ARRAY_BUFFER, size, nil, OpenGL.DYNAMIC_DRAW)
+    gl.GenBuffers(1, &buffer.id)
+    gl.BindBuffer(gl.ARRAY_BUFFER, buffer.id)
+    gl.BufferData(gl.ARRAY_BUFFER, size, nil, gl.DYNAMIC_DRAW)
 
     buffer.pos  = 0
 
@@ -26,19 +26,19 @@ Init :: proc(size: int) -> (buffer : VertexBuffer) {
 }
 
 Destroy :: proc(buffer: ^VertexBuffer) {
-    OpenGL.DeleteBuffers(1, &buffer.id)
+    gl.DeleteBuffers(1, &buffer.id)
 }
 
 vertex_buffer_add :: proc(buffer: ^VertexBuffer, vertices: []f32, size: int) {
-    OpenGL.BindBuffer(OpenGL.ARRAY_BUFFER, buffer.id)
-    OpenGL.BufferSubData(OpenGL.ARRAY_BUFFER, int(buffer.pos), size, &vertices[0])
+    gl.BindBuffer(gl.ARRAY_BUFFER, buffer.id)
+    gl.BufferSubData(gl.ARRAY_BUFFER, int(buffer.pos), size, &vertices[0])
     buffer.pos += i32(size)
 }
 
 vertex_buffer_bind :: proc(buffer: ^VertexBuffer) {
-    OpenGL.BindBuffer(OpenGL.ARRAY_BUFFER, buffer.id)
+    gl.BindBuffer(gl.ARRAY_BUFFER, buffer.id)
 }
 
 vertex_buffer_unbind :: proc(_: ^VertexBuffer) {
-    OpenGL.BindBuffer(OpenGL.ARRAY_BUFFER, 0)
+    gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 }

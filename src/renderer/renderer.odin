@@ -1,7 +1,7 @@
 package renderer
 
 import lua "vendor:lua/5.4"
-import "vendor:OpenGL"
+import gl "vendor:OpenGL"
 
 import LakshmiContext "../base/context"
 
@@ -26,9 +26,9 @@ Renderer :: struct {
 @private renderer: Renderer
 
 Init :: proc(width, height : i32) {
-    OpenGL.BlendFunc(OpenGL.SRC_ALPHA, OpenGL.ONE_MINUS_SRC_ALPHA)
-    OpenGL.Enable(OpenGL.BLEND)
-    OpenGL.ClearColor(0.0, 0.0, 0.0, 1.0)
+    gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.Enable(gl.BLEND)
+    gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 
     renderer = Renderer{}
     renderer.width  = width
@@ -36,7 +36,7 @@ Init :: proc(width, height : i32) {
     renderer.ratio  = f32(width) / f32(height)
 
     // Testing: wireframe mode
-    // OpenGL.PolygonMode(OpenGL.FRONT_AND_BACK, OpenGL.LINE)
+    // gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
     renderer.camera = Camera.Init(-renderer.ratio, renderer.ratio, -1, 1)
     renderer.main_shader = Shader.Init()
@@ -51,7 +51,7 @@ Destroy :: proc() {
 }
 
 RefreshViewport :: proc(width, height : i32) {
-    OpenGL.Viewport(0, 0, width, height)
+    gl.Viewport(0, 0, width, height)
 
     renderer.width  = width
     renderer.height = height
@@ -62,7 +62,7 @@ RefreshViewport :: proc(width, height : i32) {
 }
 
 Render :: proc() {
-    OpenGL.Clear(OpenGL.COLOR_BUFFER_BIT | OpenGL.DEPTH_BUFFER_BIT)
+    gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     renderer.main_shader->bind()
     renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
@@ -111,7 +111,7 @@ _setClearColor :: proc "c" (L: ^lua.State) -> i32 {
     b := f32(lua.tonumber(L, 3))
     a := f32(lua.tonumber(L, 4))
 
-    OpenGL.ClearColor(r, g, b, a)
+    gl.ClearColor(r, g, b, a)
 
     return 0
 }

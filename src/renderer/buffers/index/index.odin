@@ -1,6 +1,6 @@
 package renderer_index_buffer
 
-import "vendor:OpenGL"
+import gl "vendor:OpenGL"
 
 IndexBuffer :: struct {
     id:     u32,
@@ -13,9 +13,9 @@ IndexBuffer :: struct {
 }
 
 Init :: proc(count: i32) -> (buffer : IndexBuffer) {
-    OpenGL.GenBuffers(1, &buffer.id)
-    OpenGL.BindBuffer(OpenGL.ELEMENT_ARRAY_BUFFER, buffer.id)
-    OpenGL.BufferData(OpenGL.ELEMENT_ARRAY_BUFFER, int(count) * size_of(u32), nil, OpenGL.DYNAMIC_DRAW)
+    gl.GenBuffers(1, &buffer.id)
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.id)
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(count) * size_of(u32), nil, gl.DYNAMIC_DRAW)
 
     buffer.count = count
     buffer.pos   = 0
@@ -28,21 +28,21 @@ Init :: proc(count: i32) -> (buffer : IndexBuffer) {
 }
 
 Destroy :: proc(buffer: ^IndexBuffer) {
-    OpenGL.DeleteBuffers(1, &buffer.id)
+    gl.DeleteBuffers(1, &buffer.id)
 }
 
 index_buffer_add :: proc(buffer: ^IndexBuffer, indices: []u32, count: i32) {
-    OpenGL.BindBuffer(OpenGL.ELEMENT_ARRAY_BUFFER, buffer.id)
-    OpenGL.BufferSubData(OpenGL.ELEMENT_ARRAY_BUFFER, int(buffer.pos), int(count) * size_of(u32), &indices[0])
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.id)
+    gl.BufferSubData(gl.ELEMENT_ARRAY_BUFFER, int(buffer.pos), int(count) * size_of(u32), &indices[0])
 
     buffer.count += count
     buffer.pos   += count * size_of(u32)
 }
 
 index_buffer_bind :: proc(buffer: ^IndexBuffer) {
-    OpenGL.BindBuffer(OpenGL.ELEMENT_ARRAY_BUFFER, buffer.id)
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.id)
 }
 
 index_buffer_unbind :: proc(_: ^IndexBuffer) {
-    OpenGL.BindBuffer(OpenGL.ELEMENT_ARRAY_BUFFER, 0)
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 }

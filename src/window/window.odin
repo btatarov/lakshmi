@@ -5,7 +5,7 @@ import "core:log"
 
 import "vendor:glfw"
 import lua "vendor:lua/5.4"
-import "vendor:OpenGL"
+import gl "vendor:OpenGL"
 
 import Keyboard "../input/keyboard"
 import LakshmiContext "../base/context"
@@ -50,7 +50,7 @@ Init :: proc(title : cstring, width, height : i32) {
 
     glfw.MakeContextCurrent(window.handle)
 
-    OpenGL.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
+    gl.load_up_to(OPENGL_VERSION_MAJOR, OPENGL_VERSION_MINOR, glfw.gl_set_proc_address)
 
     fb_width, fb_height := glfw.GetFramebufferSize(window.handle)
     fb_scale_x, fb_scale_y := glfw.GetWindowContentScale(window.handle)
