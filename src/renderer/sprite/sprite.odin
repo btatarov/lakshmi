@@ -1,4 +1,4 @@
-package sprite
+package renderer_sprite
 
 import "core:log"
 import "core:math"
@@ -204,7 +204,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
     path := lua.L_checkstring(L, 1)
 
-    texture := Texture.Init(path)
+    texture := Texture.Init(string(path))
     Init(sprite, &texture)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
