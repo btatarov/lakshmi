@@ -79,6 +79,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "enable",             _enable },
         { "disable",            _disable },
         { "isEnabled",          _isEnabled },
+        { "isBullet",           _isBullet },
         { "getPos",             _getPos },
         { "getRot",             _getRot },
         { "getFriction",        _getFriction },
@@ -86,6 +87,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getLinearVelocity",  _getLinearVelocity },
         { "getAngularVelocity", _getAngularVelocity },
         { "getBodyType",        _getBodyType },
+        { "setBullet",          _setBullet },
         { "setPos",             _setPos },
         { "setRot",             _setRot },
         { "setFriction",        _setFriction },
@@ -144,6 +146,17 @@ _isEnabled :: proc "c" (L: ^lua.State) -> i32 {
     is_disabled := b2.Body_IsEnabled(entity.body_id)
 
     lua.pushboolean(L, b32(is_disabled))
+
+    return 1
+}
+
+_isBullet :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    is_bullet := b2.Body_IsBullet(entity.body_id)
+
+    lua.pushboolean(L, b32(is_bullet))
 
     return 1
 }
@@ -225,6 +238,17 @@ _getBodyType :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushnumber(L, lua.Number(body_type))
 
     return 1
+}
+
+_setBullet :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -2))
+    is_bullet := lua.toboolean(L, -1)
+
+    b2.Body_SetBullet(entity.body_id, bool(is_bullet))
+
+    return 0
 }
 
 _setPos :: proc "c" (L: ^lua.State) -> i32 {
