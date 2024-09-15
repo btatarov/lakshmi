@@ -82,6 +82,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getRestitution",     _getRestitution },
         { "getLinearVelocity",  _getLinearVelocity },
         { "getAngularVelocity", _getAngularVelocity },
+        { "getBodyType",        _getBodyType },
         { "setPos",             _setPos },
         { "setRot",             _setRot },
         { "setFriction",        _setFriction },
@@ -179,6 +180,17 @@ _getAngularVelocity :: proc "c" (L: ^lua.State) -> i32 {
     v := b2.Body_GetAngularVelocity(entity.body_id)
 
     lua.pushnumber(L, lua.Number(v))
+
+    return 1
+}
+
+_getBodyType :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, -1))
+    body_type := b2.Body_GetType(entity.body_id)
+
+    lua.pushnumber(L, lua.Number(body_type))
 
     return 1
 }

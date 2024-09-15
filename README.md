@@ -79,6 +79,7 @@ List of available functions:
 * LakshmiBox2DEntity.getRestitution(box)
 * LakshmiBox2DEntity.getLinearVelocity(box)
 * LakshmiBox2DEntity.getAngularVelocity(box)
+* LakshmiBox2DEntity.getBodyType(box)
 * LakshmiBox2DEntity.setPos(box, x, y)
 * LakshmiBox2DEntity.setRot(box, angle)
 * LakshmiBox2DEntity.setFriction(box, friction)
