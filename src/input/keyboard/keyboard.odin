@@ -9,7 +9,7 @@ import LakshmiContext "../../base/context"
 
 import LuaRuntime "../../lua"
 
-@private callback_ref: i32
+@private callback_ref: i32 = lua.REFNIL
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
