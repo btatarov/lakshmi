@@ -87,7 +87,7 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     text.height = u32(height_total)
     text.position = linalg.Vector3f32{0, 0, 0}
 
-    // position based on centerrorigin point
+    // position based on center origin point
     for &sprite in text.sprites {
         x, y := sprite->get_position()
         sprite->set_position(x - f32(text.width) / 2, y - f32(text.height) / 2)
@@ -136,7 +136,6 @@ text_set_position :: proc(text: ^Text, x, y: f32) {
 
     for &sprite in text.sprites {
         x_old, y_old := sprite->get_position()
-        fmt.println(x_old, y_old)
         sprite->set_position(x_old + position_offset.x, y_old + position_offset.y)
     }
 }
@@ -178,7 +177,6 @@ _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     text := (^Text)(lua.touserdata(L, 1))
-    fmt.println(text)
     x := f32(lua.tonumber(L, 2))
     y := f32(lua.tonumber(L, 3))
     text->set_position(x, y)

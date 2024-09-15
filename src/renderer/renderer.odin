@@ -8,6 +8,8 @@ import LakshmiContext "../base/context"
 import Camera "camera"
 import Shader "shader"
 import Layer "layer"
+import Sprite "sprite"
+import Text "text"
 
 import LuaRuntime "../lua"
 
@@ -69,7 +71,29 @@ Render :: proc() {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     for layer in renderer.layer_list {
-        layer->render(renderer.camera, &renderer.shaders, renderer.width, renderer.height, renderer.ratio)
+        if ! layer.visible {
+            continue
+        }
+
+        for renderable in layer.renderables {
+            switch renderable.type {
+                case .Sprite:
+                    shader := renderer.shaders["sprite"]
+                    shader->bind()
+                    shader->apply_projection(renderer.camera->get_vp_matrix())
+
+                renderable.data.(^Sprite.Sprite)->render(renderer.width, renderer.height, renderer.ratio)
+
+                case .Text:
+                    shader := renderer.shaders["text"]
+                    shader->bind()
+                    shader->apply_projection(renderer.camera->get_vp_matrix())
+
+                    for &sprite in renderable.data.(^Text.Text).sprites {
+                        sprite->render(renderer.width, renderer.height, renderer.ratio)
+                    }
+            }
+        }
     }
 }
 

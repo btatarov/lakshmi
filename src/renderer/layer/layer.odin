@@ -7,17 +7,14 @@ import lua "vendor:lua/5.4"
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
-import Camera "../camera"
-import Shader "../shader"
 import Sprite "../sprite"
 import Text "../text"
 
 Layer :: struct {
-    visible:        bool,
-    renderables:    [dynamic]Renderable,
+    visible:     bool,
+    renderables: [dynamic]Renderable,
 
-    render:         proc(layer: ^Layer, camera: ^Camera.Camera, shaders: ^map[string]Shader.Shader, screen_width, screen_height: i32, screen_ratio: f32),
-    set_visible:    proc(layer: ^Layer, visible: bool),
+    set_visible: proc(layer: ^Layer, visible: bool),
 }
 
 // TODO: in the future this should be as a separate module
@@ -40,7 +37,6 @@ Init :: proc(layer: ^Layer) {
     layer.visible = true
     layer.renderables = make([dynamic]Renderable)
 
-    layer.render      = layer_render
     layer.set_visible = layer_set_visible
 }
 
@@ -70,32 +66,6 @@ LuaBind :: proc(L: ^lua.State) {
 
 LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
-}
-
-layer_render :: proc(layer: ^Layer, camera: ^Camera.Camera, shaders: ^map[string]Shader.Shader, screen_width, screen_height: i32, screen_ratio: f32) {
-    if ! layer.visible {
-        return
-    }
-
-    for renderable in layer.renderables {
-        switch renderable.type {
-            case .Sprite:
-                shader := shaders["sprite"]
-                shader->bind()
-                shader->apply_projection(camera->get_vp_matrix())
-
-                renderable.data.(^Sprite.Sprite)->render(screen_width, screen_height, screen_ratio)
-
-            case .Text:
-                shader := shaders["text"]
-                shader->bind()
-                shader->apply_projection(camera->get_vp_matrix())
-
-                for &sprite in renderable.data.(^Text.Text).sprites {
-                    sprite->render(screen_width, screen_height, screen_ratio)
-                }
-        }
-    }
 }
 
 layer_set_visible :: proc(layer: ^Layer, visible: bool) {
