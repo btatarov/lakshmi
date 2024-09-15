@@ -1,0 +1,20 @@
+LakshmiWindow.open('Lakshmi', 1024, 768)
+LakshmiWindow.setVsync(true)
+LakshmiRenderer.setClearColor(0.3, 0.3, 0.3, 1.0)
+
+LakshmiKeyboard.setCallback(function(key, action)
+    if action == LakshmiKeyboard.KEY_PRESS_ACTION and key == LakshmiKeyboard.KEY_ESCAPE then
+        LakshmiKeyboard.clearCallback()
+        LakshmiWindow.quit()
+    end
+end)
+
+layer = LakshmiLayer.new()
+LakshmiRenderer.add(layer)
+
+text = LakshmiText.new('test/text/unitblock.ttf', 'Hello, World!', 72)
+-- text:setPos(0, -768 / 2 + 16)
+-- text:setColor(0, 0, 0, 1)
+layer:add(text, LakshmiLayer.RENDERABLE_TYPE_TEXT)
+
+

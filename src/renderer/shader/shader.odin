@@ -4,6 +4,11 @@ import "core:math/linalg"
 
 import gl "vendor:OpenGL"
 
+ShaderType :: enum {
+    Sprite,
+    Text,
+}
+
 Shader :: struct {
     program: u32,
 
@@ -12,10 +17,17 @@ Shader :: struct {
     unbind:             proc(_: ^Shader),
 }
 
-Init :: proc() -> (shader: Shader) {
+Init :: proc(type: ShaderType) -> (shader: Shader) {
     ok : bool
-    vertex_shader := string(#load("glsl/vertex.glsl"))
-    fragment_shader := string(#load("glsl/fragment.glsl"))
+    vertex_shader, fragment_shader : string
+    switch type {
+        case .Sprite:
+            vertex_shader = string(#load("glsl/sprite/vertex.glsl"))
+            fragment_shader = string(#load("glsl/sprite/fragment.glsl"))
+        case .Text:
+            vertex_shader = string(#load("glsl/text/vertex.glsl"))
+            fragment_shader = string(#load("glsl/text/fragment.glsl"))
+    }
     shader.program, ok = gl.load_shaders_source(vertex_shader, fragment_shader)
     assert(ok, "Failed to load and compile shaders.")
     gl.UseProgram(shader.program)

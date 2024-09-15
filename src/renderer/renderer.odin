@@ -18,9 +18,9 @@ Renderer :: struct {
     height: i32,
     ratio:  f32,
 
-    camera:         ^Camera.Camera,
-    main_shader:    Shader.Shader,
-    layer_list:    [dynamic]^Layer.Layer,
+    camera:     ^Camera.Camera,
+    shaders:    map[string]Shader.Shader,
+    layer_list: [dynamic]^Layer.Layer,
 }
 
 @private renderer: Renderer
@@ -38,15 +38,19 @@ Init :: proc(width, height : i32) {
     // Testing: wireframe mode
     // gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
+    renderer.shaders = make(map[string]Shader.Shader)
+    renderer.shaders["sprite"] = Shader.Init(.Sprite)
+    renderer.shaders["text"] = Shader.Init(.Text)
+
     renderer.camera = Camera.Init(-renderer.ratio, renderer.ratio, -1, 1)
-    renderer.main_shader = Shader.Init()
     renderer.layer_list = make([dynamic]^Layer.Layer)
 
     RefreshViewport(width, height)
 }
 
 Destroy :: proc() {
-    Shader.Destroy(&renderer.main_shader)
+    Shader.Destroy(&renderer.shaders["sprite"])
+    Shader.Destroy(&renderer.shaders["text"])
     delete(renderer.layer_list)
 }
 
@@ -64,11 +68,8 @@ RefreshViewport :: proc(width, height : i32) {
 Render :: proc() {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    renderer.main_shader->bind()
-    renderer.main_shader->apply_projection(renderer.camera->get_vp_matrix())
-
     for layer in renderer.layer_list {
-        layer->render(renderer.width, renderer.height, renderer.ratio)
+        layer->render(renderer.camera, &renderer.shaders, renderer.width, renderer.height, renderer.ratio)
     }
 }
 

@@ -14,6 +14,24 @@ List of available functions:
 * LakshmiWindow.setVsync(vsync)
 * LakshmiWindow.quit()
 
+### Renderer
+
+* LakshmiRenderer.add(layer)
+* LakshmiRenderer.clear()
+* LakshmiRenderer.setClearColor(r, g, b, a)
+
+### Camera
+
+* LakshmiCamera.setPos(x, y)
+* LakshmiCamera.setRot(angle)
+
+### Layer
+
+* LakshmiLayer.new()
+* LakshmiLayer.add(renderable, type)
+* LakshmiLayer.clear()
+* LakshmiLayer.setVisible(visible)
+
 ### Sprite
 
 * LakshmiSprite.new(path)
@@ -25,23 +43,9 @@ List of available functions:
 * LakshmiSprite.setScl(sprite, x, y)
 * LakshmiSprite.setVisible(sprite, visible)
 
-### Layer
+### Text
 
-* LakshmiLayer.new()
-* LakshmiLayer.add(sprite)
-* LakshmiLayer.clear()
-* LakshmiLayer.setVisible(visible)
-
-### Renderer
-
-* LakshmiRenderer.add(layer)
-* LakshmiRenderer.clear()
-* LakshmiRenderer.setClearColor(r, g, b, a)
-
-### Camera
-
-* LakshmiCamera.setPos(x, y)
-* LakshmiCamera.setRot(angle)
+* LakshmiText.new(font_path, text, size)
 
 ### Box2D
 

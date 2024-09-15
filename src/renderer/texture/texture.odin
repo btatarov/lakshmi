@@ -4,7 +4,7 @@ import "core:fmt"
 import "core:strings"
 
 import gl "vendor:OpenGL"
-import "vendor:stb/image"
+import stbi "vendor:stb/image"
 
 Texture :: struct {
     id:         u32,
@@ -35,10 +35,10 @@ InitWithPath :: proc(path: string) -> Texture {
         return tex
     }
 
-    image.set_flip_vertically_on_load(1)
-    data := image.load(strings.clone_to_cstring(path, context.temp_allocator), &tex.width, &tex.height, &tex.channels, 0)
+    stbi.set_flip_vertically_on_load(1)
+    data := stbi.load(strings.clone_to_cstring(path, context.temp_allocator), &tex.width, &tex.height, &tex.channels, 0)
     assert(data != nil, fmt.tprintf("Failed to load texture: %s", path))
-    defer image.image_free(data)
+    defer stbi.image_free(data)
 
     InitInternal(&tex, path, data)
 
@@ -65,7 +65,10 @@ InitWithData :: proc(identifier: string, data: [^]byte, width, height, channels:
 InitInternal :: proc(tex: ^Texture, identifier: string, data: rawptr) {
     internal_fmt: i32
     data_fmt: u32
-    if tex.channels == 3 {
+    if tex.channels == 1 {
+        internal_fmt = gl.RGB
+        data_fmt = gl.RED
+    } else if tex.channels == 3 {
         internal_fmt = gl.RGB8
         data_fmt = gl.RGB
     } else if tex.channels == 4 {
@@ -77,6 +80,9 @@ InitInternal :: proc(tex: ^Texture, identifier: string, data: rawptr) {
 
     gl.GenTextures(1, &tex.id)
     gl.BindTexture(gl.TEXTURE_2D, tex.id)
+    if tex.channels == 1 {
+        gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
+    }
     gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
     gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)

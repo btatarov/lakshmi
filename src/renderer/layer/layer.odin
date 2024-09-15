@@ -7,21 +7,38 @@ import lua "vendor:lua/5.4"
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
+import Camera "../camera"
+import Shader "../shader"
 import Sprite "../sprite"
+import Text "../text"
 
 Layer :: struct {
     visible:        bool,
-    sprite_list:    [dynamic]^Sprite.Sprite,
+    renderables:    [dynamic]Renderable,
 
-    render:         proc(img: ^Layer, screen_width, screen_height: i32, screen_ratio: f32),
-    set_visible:    proc(img: ^Layer, visible: bool),
+    render:         proc(layer: ^Layer, camera: ^Camera.Camera, shaders: ^map[string]Shader.Shader, screen_width, screen_height: i32, screen_ratio: f32),
+    set_visible:    proc(layer: ^Layer, visible: bool),
+}
+
+// TODO: in the future this should be as a separate module
+RenderableType :: enum {
+    Sprite,
+    Text,
+}
+
+Renderable :: struct {
+    data: union {
+        ^Sprite.Sprite,
+        ^Text.Text,
+    },
+    type: RenderableType,
 }
 
 Init :: proc(layer: ^Layer) {
     log.debugf("LakshmiLayer: Init\n")
 
     layer.visible = true
-    layer.sprite_list = make([dynamic]^Sprite.Sprite)
+    layer.renderables = make([dynamic]Renderable)
 
     layer.render      = layer_render
     layer.set_visible = layer_set_visible
@@ -30,7 +47,7 @@ Init :: proc(layer: ^Layer) {
 Destroy :: proc(layer: ^Layer) {
     log.debugf("LakshmiLayer: Destroy\n")
 
-    delete(layer.sprite_list)
+    delete(layer.renderables)
 }
 
 LuaBind :: proc(L: ^lua.State) {
@@ -41,20 +58,43 @@ LuaBind :: proc(L: ^lua.State) {
         { "setVisible", _set_visible },
         { nil, nil },
     }
-    LuaRuntime.BindClass(L, "LakshmiLayer", &reg_table, __gc)
+
+    constants: map[string]u32 = {
+        "RENDERABLE_TYPE_SPRITE" = u32(RenderableType.Sprite),
+        "RENDERABLE_TYPE_TEXT"   = u32(RenderableType.Text),
+    }
+    defer delete(constants)
+
+    LuaRuntime.BindClass(L, "LakshmiLayer", &reg_table, &constants, __gc)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
 }
 
-layer_render :: proc(layer: ^Layer, screen_width, screen_height: i32, screen_ratio: f32) {
+layer_render :: proc(layer: ^Layer, camera: ^Camera.Camera, shaders: ^map[string]Shader.Shader, screen_width, screen_height: i32, screen_ratio: f32) {
     if ! layer.visible {
         return
     }
 
-    for sprite in layer.sprite_list {
-        sprite->render(screen_width, screen_height, screen_ratio)
+    for renderable in layer.renderables {
+        switch renderable.type {
+            case .Sprite:
+                shader := shaders["sprite"]
+                shader->bind()
+                shader->apply_projection(camera->get_vp_matrix())
+
+                renderable.data.(^Sprite.Sprite)->render(screen_width, screen_height, screen_ratio)
+
+            case .Text:
+                shader := shaders["text"]
+                shader->bind()
+                shader->apply_projection(camera->get_vp_matrix())
+
+                for &sprite in renderable.data.(^Text.Text).sprites {
+                    sprite->render(screen_width, screen_height, screen_ratio)
+                }
+        }
     }
 }
 
@@ -76,9 +116,25 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 _add :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
-    layer  := (^Layer)(lua.touserdata(L, -2))
-    sprite := (^Sprite.Sprite)(lua.touserdata(L, -1))
-    append(&layer.sprite_list, sprite)
+    layer  := (^Layer)(lua.touserdata(L, 1))
+    type   := RenderableType((lua.tonumber(L, 3)))
+
+    // TODO: in the future these should have some type of inheritance instead
+    switch type {
+        case RenderableType.Sprite:
+            renderable: Renderable = {
+                data = (^Sprite.Sprite)(lua.touserdata(L, 2)),
+                type = .Sprite,
+            }
+            append(&layer.renderables, renderable)
+
+        case RenderableType.Text:
+            renderable: Renderable = {
+                data = (^Text.Text)(lua.touserdata(L, 2)),
+                type = .Text,
+            }
+            append(&layer.renderables, renderable)
+    }
 
     return 0
 }
@@ -86,9 +142,9 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
 _clear :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
-    layer := (^Layer)(lua.touserdata(L, -1))
-    delete(layer.sprite_list)
-    layer.sprite_list = make([dynamic]^Sprite.Sprite)
+    layer := (^Layer)(lua.touserdata(L, 1))
+    delete(layer.renderables)
+    layer.renderables = make([dynamic]Renderable)
 
     return 0
 }
@@ -96,8 +152,8 @@ _clear :: proc "c" (L: ^lua.State) -> i32 {
 _set_visible :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
-    layer := (^Layer)(lua.touserdata(L, -2))
-    visible := bool(lua.toboolean(L, -1))
+    layer := (^Layer)(lua.touserdata(L, 1))
+    visible := bool(lua.toboolean(L, 2))
     layer.set_visible(layer, visible)
 
     return 0
@@ -106,7 +162,7 @@ _set_visible :: proc "c" (L: ^lua.State) -> i32 {
 __gc :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
-    layer := (^Layer)(lua.touserdata(L, -1))
+    layer := (^Layer)(lua.touserdata(L, 1))
     Destroy(layer)
 
     return 0

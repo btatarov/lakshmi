@@ -1,0 +1,136 @@
+package renderer_text
+
+import "core:fmt"
+import "core:log"
+import "core:os"
+import "core:math/linalg"
+
+import lua "vendor:lua/5.4"
+import stbtt "vendor:stb/truetype"
+
+import Sprite "../sprite"
+import Texture "../texture"
+
+import LakshmiContext "../../base/context"
+import LuaRuntime "../../lua"
+
+Text :: struct {
+    width:    u32,
+    height:   u32,
+    position: linalg.Vector3f32,
+    str:      string,
+    sprites:  [dynamic]Sprite.Sprite,
+}
+
+Init :: proc(text: ^Text, font_path, str: string, size: f32) {
+    log.debugf("LakshmiText: Init\n")
+
+    text.sprites = make([dynamic]Sprite.Sprite)
+    text.str = str
+
+    data, ok := os.read_entire_file(font_path)
+    assert(ok, fmt.tprintf("LakshmiText: Failed to find font file: %s", font_path))
+
+    font: stbtt.fontinfo
+    stbtt.InitFont(&font, &data[0], 0)
+
+    scale := stbtt.ScaleForPixelHeight(&font, f32(size))
+
+    char_offset: u32 = 5
+    x_first, x_total: f32
+    height_total: u32
+    for char, i in str {
+        // TODO: load from cache first
+        width, height, x_offset, y_offset: i32
+        bitmap := stbtt.GetCodepointBitmap(&font, 0, scale, char, &width, &height, &x_offset, &y_offset)
+        defer stbtt.FreeBitmap(bitmap, nil)
+
+        // flip vertically
+        for y: i32 = 0; y < height / 2; y += 1 {
+            for x: i32 = 0; x < width; x += 1 {
+                i0 := y * width + x
+                i1 := (height - y - 1) * width + x
+                bitmap[i0], bitmap[i1] = bitmap[i1], bitmap[i0]
+            }
+        }
+
+        if i == 0 {
+            x_first = f32(width) / 2
+        }
+
+        x_pos := x_total + f32(width) / 2 - x_first
+        y_pos := - f32(y_offset) / 2
+
+        height_total = max(u32(height), height_total)
+
+        identifier := fmt.tprintf("%s__%d__%r", font_path, size, char)
+        texture := Texture.Init(identifier, bitmap, width, height, 1)
+
+        sprite: Sprite.Sprite
+        Sprite.Init(&sprite, &texture)
+        sprite->set_position(x_pos, y_pos)
+        append(&text.sprites, sprite)
+
+        x_total += f32(width) + f32(x_offset) / 2 + f32(char_offset)
+
+        if i < len(str) - 1 {
+            kern := stbtt.GetCodepointKernAdvance(&font, rune(str[i]), rune(str[i + 1]))
+            x_total += f32(kern) * scale
+        }
+    }
+
+    text.width = u32(x_total) - char_offset
+    text.height = u32(height_total)
+    text.position = linalg.Vector3f32{0, 0, 0}
+
+    // position based on centerrorigin point
+    for &sprite in text.sprites {
+        x, y := sprite->get_position()
+        sprite->set_position(x - f32(text.width) / 2, y - f32(text.height) / 2)
+    }
+}
+
+Destroy :: proc(text: ^Text) {
+    log.debugf("LakshmiText: Destroy\n")
+
+    for &sprite in text.sprites {
+        Sprite.Destroy(&sprite)
+    }
+}
+
+LuaBind :: proc(L: ^lua.State) {
+    @static reg_table: []lua.L_Reg = {
+        { "new", _new },
+        { nil, nil },
+    }
+    LuaRuntime.BindClass(L, "LakshmiText", &reg_table, __gc)
+}
+
+LuaUnbind :: proc(L: ^lua.State) {
+    // Empty
+}
+
+_new :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.newuserdata(L, size_of(Text)))
+    font := lua.tostring(L, 1)
+    str := lua.tostring(L, 2)
+    size := lua.tonumber(L, 3)
+
+    Init(text, string(font), string(str), f32(size))
+
+    LuaRuntime.BindClassMetatable(L, "LakshmiText")
+
+    return 1
+}
+
+__gc :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+
+    Destroy(text)
+
+    return 0
+}

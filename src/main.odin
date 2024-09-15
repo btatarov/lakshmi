@@ -14,6 +14,7 @@ import Renderer "renderer"
 import Camera "renderer/camera"
 import Layer "renderer/layer"
 import Sprite "renderer/sprite"
+import Text "renderer/text"
 import Window "window"
 
 import Box2D "box2d"
@@ -67,6 +68,9 @@ main :: proc() {
 
     Sprite.LuaBind(L)
     defer Sprite.LuaUnbind(L)
+
+    Text.LuaBind(L)
+    defer Text.LuaUnbind(L)
 
     Box2D.LuaBind(L)
     defer Box2D.LuaUnbind(L)
