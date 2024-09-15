@@ -20,6 +20,10 @@ Text :: struct {
     position: linalg.Vector3f32,
     str:      string,
     sprites:  [dynamic]Sprite.Sprite,
+
+    get_position: proc(text: ^Text) -> (f32, f32),
+    set_position: proc(text: ^Text, x, y: f32),
+    set_visible:  proc(text: ^Text, visible: bool),
 }
 
 Init :: proc(text: ^Text, font_path, str: string, size: f32) {
@@ -88,6 +92,10 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
         x, y := sprite->get_position()
         sprite->set_position(x - f32(text.width) / 2, y - f32(text.height) / 2)
     }
+
+    text.get_position = text_get_position
+    text.set_position = text_set_position
+    text.set_visible  = text_set_visible
 }
 
 Destroy :: proc(text: ^Text) {
@@ -100,7 +108,10 @@ Destroy :: proc(text: ^Text) {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "new", _new },
+        { "new",        _new },
+        { "getPos",     _get_pos },
+        { "setPos",     _set_pos },
+        { "setVisible", _set_visible },
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiText", &reg_table, __gc)
@@ -108,6 +119,32 @@ LuaBind :: proc(L: ^lua.State) {
 
 LuaUnbind :: proc(L: ^lua.State) {
     // Empty
+}
+
+text_get_position :: proc(text: ^Text) -> (f32, f32) {
+    return text.position.x, text.position.y
+}
+
+text_set_position :: proc(text: ^Text, x, y: f32) {
+    position_offset := linalg.Vector2f32 {
+        x - text.position.x,
+        y - text.position.y,
+    }
+    _ = position_offset
+
+    text.position = linalg.Vector3f32{x, y, 0}
+
+    for &sprite in text.sprites {
+        x_old, y_old := sprite->get_position()
+        fmt.println(x_old, y_old)
+        sprite->set_position(x_old + position_offset.x, y_old + position_offset.y)
+    }
+}
+
+text_set_visible :: proc(text: ^Text, visible: bool) {
+    for &sprite in text.sprites {
+        sprite->set_visible(visible)
+    }
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
@@ -123,6 +160,40 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     LuaRuntime.BindClassMetatable(L, "LakshmiText")
 
     return 1
+}
+
+_get_pos :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    x, y := text->get_position()
+
+    lua.pushnumber(L, lua.Number(x))
+    lua.pushnumber(L, lua.Number(y))
+
+    return 2
+}
+
+_set_pos :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    fmt.println(text)
+    x := f32(lua.tonumber(L, 2))
+    y := f32(lua.tonumber(L, 3))
+    text->set_position(x, y)
+
+    return 0
+}
+
+_set_visible :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    visible := lua.toboolean(L, 2)
+    text->set_visible(bool(visible))
+
+    return 0
 }
 
 __gc :: proc "c" (L: ^lua.State) -> i32 {

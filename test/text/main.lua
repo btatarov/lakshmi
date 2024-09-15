@@ -13,7 +13,7 @@ layer = LakshmiLayer.new()
 LakshmiRenderer.add(layer)
 
 text = LakshmiText.new('test/text/unitblock.ttf', 'Hello, World!', 72)
--- text:setPos(0, -768 / 2 + 16)
+text:setPos(0, 768 / 2 - 100)
 -- text:setColor(0, 0, 0, 1)
 layer:add(text, LakshmiLayer.RENDERABLE_TYPE_TEXT)
 

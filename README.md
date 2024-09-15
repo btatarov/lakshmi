@@ -46,6 +46,9 @@ List of available functions:
 ### Text
 
 * LakshmiText.new(font_path, text, size)
+* LakshmiText.getPos(text)
+* LakshmiText.setPos(text, x, y)
+* LakshmiText.setVisible(text, visible)
 
 ### Box2D
 
