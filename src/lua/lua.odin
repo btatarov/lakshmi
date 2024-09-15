@@ -13,13 +13,39 @@ Init :: proc() {
     lua.L_openlibs(LuaState)
 }
 
-BindClass :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg, destructor: proc "c" (L: ^lua.State) -> i32) {
+BindClass :: proc { BindClassSimple, BindClassWithConstants }
+
+BindClassSimple :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg, destructor: proc "c" (L: ^lua.State) -> i32) {
     lua.newtable(L)
     index := lua.gettop(L)
 
     lua.pushvalue(L, index)
     lua.setglobal(L, name)
     lua.L_setfuncs(L, raw_data(reg_table[:]), 0)
+
+    lua.L_newmetatable(L, fmt.ctprintf("%sMT", name))
+
+    lua.pushstring(L, "__gc")
+    lua.pushcfunction(L, lua.CFunction(destructor))
+    lua.settable(L, -3)
+
+    lua.pushstring(L, "__index")
+    lua.pushvalue(L, index)
+    lua.settable(L, -3)
+}
+
+BindClassWithConstants :: proc(L: ^lua.State, name: cstring, reg_table: ^[]lua.L_Reg, constants: ^map[string]u32, destructor: proc "c" (L: ^lua.State) -> i32) {
+    lua.newtable(L)
+    index := lua.gettop(L)
+
+    lua.pushvalue(L, index)
+    lua.setglobal(L, name)
+    lua.L_setfuncs(L, raw_data(reg_table[:]), 0)
+
+    for name, _ in constants {
+        lua.pushinteger(L, lua.Integer(constants[name]))
+        lua.setfield(L, -2, fmt.ctprintf("%s", name))
+    }
 
     lua.L_newmetatable(L, fmt.ctprintf("%sMT", name))
 
