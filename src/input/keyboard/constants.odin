@@ -1,4 +1,4 @@
-package keyboard
+package input_keyboard
 
 import "vendor:glfw"
 
