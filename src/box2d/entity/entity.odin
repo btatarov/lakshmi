@@ -6,8 +6,6 @@ import "core:math"
 import b2 "vendor:box2d"
 import lua "vendor:lua/5.4"
 
-import World "../world"
-
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
@@ -35,7 +33,8 @@ Entity :: struct {
     idx:        int,
 }
 
-@private entities: [dynamic]^Entity
+@private entities: ^[dynamic]^Entity
+@private world_id: b2.WorldId
 
 Init :: proc(entity: ^Entity, primitive: ^Primitive, is_sensor: bool) {
     log.debugf("LakshmiBox2DEntity: Init\n")
@@ -45,7 +44,7 @@ Init :: proc(entity: ^Entity, primitive: ^Primitive, is_sensor: bool) {
     entity.body = b2.DefaultBodyDef()
     entity.body.type = .staticBody
     entity.body.position = { 0, 0 }
-    entity.body_id = b2.CreateBody(World.GetWorld().id, entity.body)
+    entity.body_id = b2.CreateBody(world_id, entity.body)
 
     entity.shape = b2.DefaultShapeDef()
     entity.shape.isSensor = is_sensor
@@ -68,7 +67,7 @@ Destroy :: proc(entity: ^Entity) {
     b2.DestroyShape(entity.shape_id)
     b2.DestroyBody(entity.body_id)
 
-    ordered_remove(&entities, entity.idx)
+    ordered_remove(entities, entity.idx)
     for i in entity.idx+1..<len(entities) {
         entities[i].idx -= 1
     }
@@ -104,16 +103,27 @@ LuaBind :: proc(L: ^lua.State) {
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiBox2DEntity", &reg_table, __gc)
-
-    entities = make([dynamic]^Entity)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
-    delete(entities)
+    // Empty
+}
+
+SetWorldRef :: proc(id: b2.WorldId, entities_ref: ^[dynamic]^Entity) {
+    world_id = id
+    entities = entities_ref
+}
+
+UnsetWorldRef :: proc() {
+    world_id.index1 = 0
+    world_id.revision = 0
+    entities = nil
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
+
+    assert(entities != nil, "LakshmiBox2DEntity: World not initialized")
 
     entity := (^Entity)(lua.newuserdata(L, size_of(Entity)))
     primitive := (^Primitive)(lua.touserdata(L, 1))
@@ -121,7 +131,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 
     Init(entity, primitive, bool(is_sensor))
 
-    append(&entities, entity)
+    append(entities, entity)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiBox2DEntity")
 

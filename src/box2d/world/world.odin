@@ -5,10 +5,13 @@ import "core:log"
 import b2 "vendor:box2d"
 import lua "vendor:lua/5.4"
 
+import Entity "../entity"
+
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
 World :: struct {
+    entities:   [dynamic]^Entity.Entity,
     def:        b2.WorldDef,
     id:         b2.WorldId,
     steps:      i32,
@@ -23,25 +26,28 @@ Init :: proc() {
     if ! world.is_active {
         world.def = b2.DefaultWorldDef()
         world.id = b2.CreateWorld(world.def)
+        Entity.SetWorldRef(world.id, &world.entities)
     }
 
     if world.steps == 0 {
         world.steps = 4
     }
     world.is_active = true
+    world.entities = make([dynamic]^Entity.Entity)
 }
 
 Destroy :: proc () {
     if world.is_active {
         log.debugf("LakshmiBox2DWorld: Destroy\n")
         b2.DestroyWorld(world.id)
+        Entity.UnsetWorldRef()
     }
 
     world.is_active = false
-}
-
-GetWorld :: proc () -> ^World {
-    return &world
+    for &entity in world.entities {
+        Entity.Destroy(entity)
+    }
+    delete(world.entities)
 }
 
 LuaBind :: proc(L: ^lua.State) {
@@ -90,6 +96,8 @@ _update :: proc "c" (L: ^lua.State) -> i32 {
 
     if world.is_active {
         b2.World_Step(world.id, f32(step), world.steps)
+
+        // contact_events := b2.World_GetContactEvents(world.id)
     }
 
     return 0
