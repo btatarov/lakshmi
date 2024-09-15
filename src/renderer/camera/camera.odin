@@ -1,4 +1,4 @@
-package camera
+package renderer_camera
 
 import "core:math"
 import "core:math/linalg"

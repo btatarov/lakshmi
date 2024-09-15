@@ -1,4 +1,4 @@
-package index
+package renderer_index_buffer
 
 import "vendor:OpenGL"
 

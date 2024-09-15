@@ -1,4 +1,4 @@
-package vertex
+package renderer_vertex_buffer
 
 import "vendor:OpenGL"
 

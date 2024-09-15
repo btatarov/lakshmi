@@ -1,4 +1,4 @@
-package shader
+package renderer_shader
 
 import "core:math/linalg"
 

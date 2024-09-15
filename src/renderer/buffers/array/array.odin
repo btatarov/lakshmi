@@ -1,4 +1,4 @@
-package array
+package renderer_index_array
 
 import "vendor:OpenGL"
 
