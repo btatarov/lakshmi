@@ -24,6 +24,7 @@ Window :: struct {
 
 @private window: Window
 @private loop_callback_ref: i32 = lua.REFNIL
+@private resize_callback_ref: i32 = lua.REFNIL
 
 Init :: proc(title : cstring, width, height : i32) {
     log.debugf("LakshmiWindow: Init\n")
@@ -73,11 +74,13 @@ Destroy :: proc() {
 
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
-        { "open",               _open },
-        { "clearLoopCallback",  _clearLoopCallback },
-        { "setLoopCallback",    _setLoopCallback },
-        { "setVsync",           _setVsyc },
-        { "quit",               _quit },
+        { "open",                _open },
+        { "clearLoopCallback",   _clearLoopCallback },
+        { "clearResizeCallback", _clearResizeCallback },
+        { "setLoopCallback",     _setLoopCallback },
+        { "setResizeCallback",   _setResizeCallback },
+        { "setVsync",            _setVsyc },
+        { "quit",                _quit },
         { nil, nil },
     }
     LuaRuntime.BindSingleton(L, "LakshmiWindow", &reg_table)
@@ -150,6 +153,17 @@ OnWindowResizeCallback :: proc "c" (window : glfw.WindowHandle, width, height : 
     context = LakshmiContext.GetDefault()
 
     Renderer.RefreshViewport(width, height)
+
+    if resize_callback_ref != lua.REFNIL {
+        L := LuaRuntime.GetState()
+
+        lua.rawgeti(L, lua.REGISTRYINDEX, lua.Integer(resize_callback_ref))
+        lua.pushinteger(L, lua.Integer(width))
+        lua.pushinteger(L, lua.Integer(height))
+
+        status := lua.pcall(L, 2, 0, 0)
+        LuaRuntime.CheckOK(L, lua.Status(status))
+    }
 }
 
 SetVsync :: proc(enabled : bool) {
@@ -182,6 +196,17 @@ _clearLoopCallback :: proc "c" (L: ^lua.State) -> i32 {
     return 0
 }
 
+_clearResizeCallback :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    if resize_callback_ref != lua.REFNIL {
+        lua.L_unref(L, lua.REGISTRYINDEX, resize_callback_ref)
+        resize_callback_ref = lua.REFNIL
+    }
+
+    return 0
+}
+
 _setLoopCallback :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -192,6 +217,20 @@ _setLoopCallback :: proc "c" (L: ^lua.State) -> i32 {
     }
 
     loop_callback_ref = lua.L_ref(L, lua.REGISTRYINDEX)
+
+    return 0
+}
+
+_setResizeCallback :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    if ! lua.isfunction(L, 1) {
+        log.errorf("LakshmiWindow.setResizeFunc: argument 1 is not a function\n")
+        lua.pop(L, 1)
+        return 0
+    }
+
+    resize_callback_ref = lua.L_ref(L, lua.REGISTRYINDEX)
 
     return 0
 }
