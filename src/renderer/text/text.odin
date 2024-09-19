@@ -26,6 +26,19 @@ Text :: struct {
     set_visible:  proc(text: ^Text, visible: bool),
 }
 
+GlyphCache :: struct {
+    font_path: string,
+    char:      rune,
+    size:      f32,
+    width:     i32,
+    height:    i32,
+    x_offset:  i32,
+    y_offset:  i32,
+    bitmap:    [^]byte,
+}
+
+@private glyph_cache: map[string]GlyphCache
+
 Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     log.debugf("LakshmiText: Init\n")
 
@@ -44,17 +57,38 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     x_first, x_total: f32
     height_total: u32
     for char, i in str {
-        // TODO: load from cache first
-        width, height, x_offset, y_offset: i32
-        bitmap := stbtt.GetCodepointBitmap(&font, 0, scale, char, &width, &height, &x_offset, &y_offset)
-        defer stbtt.FreeBitmap(bitmap, nil)
+        identifier := fmt.tprintf("%s__%d__%r", font_path, size, char)
 
-        // flip vertically
-        for y: i32 = 0; y < height / 2; y += 1 {
-            for x: i32 = 0; x < width; x += 1 {
-                i0 := y * width + x
-                i1 := (height - y - 1) * width + x
-                bitmap[i0], bitmap[i1] = bitmap[i1], bitmap[i0]
+        cache: GlyphCache
+        bitmap: [^]byte
+        width, height, x_offset, y_offset: i32
+        if cache, ok = glyph_cache[identifier]; ok {
+            bitmap   = cache.bitmap
+            width    = cache.width
+            height   = cache.height
+            x_offset = cache.x_offset
+            y_offset = cache.y_offset
+        } else {
+            bitmap = stbtt.GetCodepointBitmap(&font, 0, scale, char, &width, &height, &x_offset, &y_offset)
+
+            // flip vertically
+            for y: i32 = 0; y < height / 2; y += 1 {
+                for x: i32 = 0; x < width; x += 1 {
+                    i0 := y * width + x
+                    i1 := (height - y - 1) * width + x
+                    bitmap[i0], bitmap[i1] = bitmap[i1], bitmap[i0]
+                }
+            }
+
+            glyph_cache[identifier] = GlyphCache {
+                font_path = font_path,
+                char      = char,
+                size      = size,
+                width     = width,
+                height    = height,
+                x_offset  = x_offset,
+                y_offset  = y_offset,
+                bitmap    = bitmap,
             }
         }
 
@@ -67,7 +101,6 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
 
         height_total = max(u32(height), height_total)
 
-        identifier := fmt.tprintf("%s__%d__%r", font_path, size, char)
         texture := Texture.Init(identifier, bitmap, width, height, 1)
 
         sprite: Sprite.Sprite
@@ -115,10 +148,15 @@ LuaBind :: proc(L: ^lua.State) {
         { nil, nil },
     }
     LuaRuntime.BindClass(L, "LakshmiText", &reg_table, __gc)
+
+    glyph_cache = make(map[string]GlyphCache)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
-    // Empty
+    for key, _ in glyph_cache {
+        stbtt.FreeBitmap(glyph_cache[key].bitmap, nil)
+    }
+    delete(glyph_cache)
 }
 
 text_get_position :: proc(text: ^Text) -> (f32, f32) {
