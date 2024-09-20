@@ -37,9 +37,11 @@ List of available functions:
 ### Sprite
 
 * LakshmiSprite.new(path)
+* LakshmiSprite.getPiv(sprite)
 * LakshmiSprite.getPos(sprite)
 * LakshmiSprite.getRot(sprite)
 * LakshmiSprite.getScl(sprite)
+* LakshmiSprite.setPiv(sprite, x, y)
 * LakshmiSprite.setPos(sprite, x, y)
 * LakshmiSprite.setRot(sprite, angle)
 * LakshmiSprite.setScl(sprite, x, y)

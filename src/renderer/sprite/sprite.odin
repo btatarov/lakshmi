@@ -21,6 +21,7 @@ Sprite :: struct {
     position:       linalg.Vector3f32,
     scale:          linalg.Vector3f32,
     rotation:       f32,
+    pivot:          linalg.Vector3f32,
     visible:        bool,
     texture:        Texture.Texture,
 
@@ -32,9 +33,11 @@ Sprite :: struct {
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
+    get_pivot:      proc(img: ^Sprite) -> (f32, f32),
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_rotation:   proc(img: ^Sprite) -> f32,
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
+    set_pivot:      proc(img: ^Sprite, x, y: f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
     set_scale:      proc(img: ^Sprite, x, y: f32),
@@ -73,9 +76,11 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.index_buffer = IndexBuffer.Init(len(img.indices))
     img.index_buffer->add(img.indices[:], len(img.indices))
 
+    img.get_pivot    = sprite_get_pivot
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
     img.get_scale    = sprite_get_scale
+    img.set_pivot    = sprite_set_pivot
     img.set_position = sprite_set_position
     img.set_rotation = sprite_set_rotation
     img.set_scale    = sprite_set_scale
@@ -96,9 +101,11 @@ Destroy :: proc(img: ^Sprite) {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new",        _new },
+        { "getPiv",     _get_piv },
         { "getPos",     _get_pos },
         { "getRot",     _get_rot},
         { "getScl",     _get_scl },
+        { "setPiv",     _set_piv },
         { "setPos",     _set_pos },
         { "setRot",     _set_rot },
         { "setScl",     _set_scl },
@@ -112,6 +119,10 @@ LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
 }
 
+sprite_get_pivot :: proc(img: ^Sprite) -> (f32, f32) {
+    return img.pivot.x, img.pivot.y
+}
+
 sprite_get_position :: proc(img: ^Sprite) -> (f32, f32) {
     return img.position.x, img.position.y
 }
@@ -122,6 +133,11 @@ sprite_get_rotation :: proc(img: ^Sprite) -> f32 {
 
 sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
     return img.scale.x, img.scale.y
+}
+
+sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
+    img.pivot = {f32(x), f32(y), 0}
+    img.is_dirty = true
 }
 
 sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
@@ -169,14 +185,24 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     pos_normalized.y = (img.position.y + f32(screen_height) * 0.5) / f32(screen_height)
     pos_normalized.y = pos_normalized.y * 2 - 1
 
+    piv_normalized: linalg.Vector3f32
+    piv_normalized.x = (img.pivot.x + f32(screen_width) * 0.5) / f32(screen_width)
+    piv_normalized.x = piv_normalized.x * screen_ratio * 2 - screen_ratio
+    piv_normalized.y = (img.pivot.y + f32(screen_height) * 0.5) / f32(screen_height)
+
     size_normalized: linalg.Vector3f32
     size_normalized.x = f32(img.width) / f32(screen_width) * screen_ratio
     size_normalized.y = f32(img.height) / f32(screen_height)
 
     model_matrix: linalg.Matrix4f32 = 1
-    model_matrix *= linalg.matrix4_translate(pos_normalized)
+
     model_matrix *= linalg.matrix4_scale(img.scale)
+
+    model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{piv_normalized.x, piv_normalized.y, 0})
     model_matrix *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
+    model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{-piv_normalized.x, -piv_normalized.y, 0})
+
+    model_matrix *= linalg.matrix4_translate(pos_normalized)
 
     a := model_matrix * linalg.Vector4f32{ size_normalized.x,  size_normalized.y, 0.0, 1.0}
     b := model_matrix * linalg.Vector4f32{ size_normalized.x, -size_normalized.y, 0.0, 1.0}
@@ -212,6 +238,18 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
+_get_piv :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    x, y := sprite->get_pivot()
+
+    lua.pushnumber(L, lua.Number(x))
+    lua.pushnumber(L, lua.Number(y))
+
+    return 2
+}
+
 _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -245,6 +283,17 @@ _get_scl :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushnumber(L, lua.Number(y))
 
     return 2
+}
+
+_set_piv :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, 1))
+    x := f32(lua.tonumber(L, 2))
+    y := f32(lua.tonumber(L, 3))
+    sprite->set_pivot(x, y)
+
+    return 0
 }
 
 _set_pos :: proc "c" (L: ^lua.State) -> i32 {
