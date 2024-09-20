@@ -20,8 +20,8 @@ Sprite :: struct {
     height:         u32,
     position:       linalg.Vector3f32,
     scale:          linalg.Vector3f32,
-    rotation:       f32,
     pivot:          linalg.Vector3f32,
+    rotation:       f32,
     visible:        bool,
     texture:        Texture.Texture,
 
@@ -37,6 +37,7 @@ Sprite :: struct {
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_rotation:   proc(img: ^Sprite) -> f32,
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
+    is_visible:     proc(img: ^Sprite) -> bool,
     set_pivot:      proc(img: ^Sprite, x, y: f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
@@ -80,6 +81,7 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
     img.get_scale    = sprite_get_scale
+    img.is_visible   = sprite_is_visible
     img.set_pivot    = sprite_set_pivot
     img.set_position = sprite_set_position
     img.set_rotation = sprite_set_rotation
@@ -105,6 +107,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getPos",     _get_pos },
         { "getRot",     _get_rot},
         { "getScl",     _get_scl },
+        { "isVisible",  _get_visible },
         { "setPiv",     _set_piv },
         { "setPos",     _set_pos },
         { "setRot",     _set_rot },
@@ -138,6 +141,10 @@ sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
 sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
     img.pivot = {f32(x), f32(y), 0}
     img.is_dirty = true
+}
+
+sprite_is_visible :: proc(img: ^Sprite) -> bool {
+    return img.visible
 }
 
 sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
@@ -283,6 +290,17 @@ _get_scl :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushnumber(L, lua.Number(y))
 
     return 2
+}
+
+_get_visible :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    visible := sprite->is_visible()
+
+    lua.pushboolean(L, b32(visible))
+
+    return 1
 }
 
 _set_piv :: proc "c" (L: ^lua.State) -> i32 {
