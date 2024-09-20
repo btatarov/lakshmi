@@ -24,6 +24,7 @@ Sprite :: struct {
     rotation:       f32,
     visible:        bool,
     texture:        Texture.Texture,
+    color:          linalg.Vector4f32,
 
     quad:           [4 * 9]f32,
     indices:        [2 * 3]u32,
@@ -33,11 +34,13 @@ Sprite :: struct {
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
 
+    get_color:      proc(img: ^Sprite) -> linalg.Vector4f32,
     get_pivot:      proc(img: ^Sprite) -> (f32, f32),
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_rotation:   proc(img: ^Sprite) -> f32,
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
     is_visible:     proc(img: ^Sprite) -> bool,
+    set_color:      proc(img: ^Sprite, color: linalg.Vector4f32),
     set_pivot:      proc(img: ^Sprite, x, y: f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
@@ -77,11 +80,13 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.index_buffer = IndexBuffer.Init(len(img.indices))
     img.index_buffer->add(img.indices[:], len(img.indices))
 
+    img.get_color    = sprite_get_color
     img.get_pivot    = sprite_get_pivot
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
     img.get_scale    = sprite_get_scale
     img.is_visible   = sprite_is_visible
+    img.set_color    = sprite_set_color
     img.set_pivot    = sprite_set_pivot
     img.set_position = sprite_set_position
     img.set_rotation = sprite_set_rotation
@@ -103,11 +108,13 @@ Destroy :: proc(img: ^Sprite) {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new",        _new },
+        { "getColor",   _get_color },
         { "getPiv",     _get_piv },
         { "getPos",     _get_pos },
         { "getRot",     _get_rot},
         { "getScl",     _get_scl },
         { "isVisible",  _get_visible },
+        { "setColor",   _set_color },
         { "setPiv",     _set_piv },
         { "setPos",     _set_pos },
         { "setRot",     _set_rot },
@@ -120,6 +127,10 @@ LuaBind :: proc(L: ^lua.State) {
 
 LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
+}
+
+sprite_get_color :: proc(img: ^Sprite) -> linalg.Vector4f32 {
+    return img.color
 }
 
 sprite_get_pivot :: proc(img: ^Sprite) -> (f32, f32) {
@@ -145,6 +156,11 @@ sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
 
 sprite_is_visible :: proc(img: ^Sprite) -> bool {
     return img.visible
+}
+
+sprite_set_color :: proc(img: ^Sprite, color: linalg.Vector4f32) {
+    img.color = color
+    img.is_dirty = true
 }
 
 sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
@@ -229,6 +245,24 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     img.quad[27] = d[0]
     img.quad[28] = d[1]
     img.quad[29] = d[2]
+
+    // set color
+    img.quad[3]  = img.color.r
+    img.quad[4]  = img.color.g
+    img.quad[5]  = img.color.b
+    img.quad[6]  = img.color.a
+    img.quad[12] = img.color.r
+    img.quad[13] = img.color.g
+    img.quad[14] = img.color.b
+    img.quad[15] = img.color.a
+    img.quad[21] = img.color.r
+    img.quad[22] = img.color.g
+    img.quad[23] = img.color.b
+    img.quad[24] = img.color.a
+    img.quad[30] = img.color.r
+    img.quad[31] = img.color.g
+    img.quad[32] = img.color.b
+    img.quad[33] = img.color.a
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
@@ -243,6 +277,20 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
 
     return 1
+}
+
+_get_color :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    color := sprite->get_color()
+
+    lua.pushnumber(L, lua.Number(color.r * 255))
+    lua.pushnumber(L, lua.Number(color.g * 255))
+    lua.pushnumber(L, lua.Number(color.b * 255))
+    lua.pushnumber(L, lua.Number(color.a * 255))
+
+    return 4
 }
 
 _get_piv :: proc "c" (L: ^lua.State) -> i32 {
@@ -301,6 +349,19 @@ _get_visible :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushboolean(L, b32(visible))
 
     return 1
+}
+
+_set_color :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -5))
+    r := f32(lua.tonumber(L, -4)) / 255
+    g := f32(lua.tonumber(L, -3)) / 255
+    b := f32(lua.tonumber(L, -2)) / 255
+    a := f32(lua.tonumber(L, -1)) / 255
+    sprite->set_color(linalg.Vector4f32{r, g, b, a})
+
+    return 0
 }
 
 _set_piv :: proc "c" (L: ^lua.State) -> i32 {
