@@ -74,6 +74,8 @@ LuaBind :: proc(L: ^lua.State) {
         { "getLinearVelocity",      _getLinearVelocity },
         { "getAngularVelocity",     _getAngularVelocity },
         { "getBodyType",            _getBodyType },
+        { "getCategoryBits",        _getCategoryBits },
+        { "getMaskBits",            _getMaskBits },
         { "getUniqueID",            _getUniqueID },
         { "setBullet",              _setBullet },
         { "setPos",                 _setPos },
@@ -83,6 +85,8 @@ LuaBind :: proc(L: ^lua.State) {
         { "setLinearVelocity",      _setLinearVelocity },
         { "setAngularVelocity",     _setAngularVelocity },
         { "setBodyType",            _setBodyType },
+        { "setCategoryBits",        _setCategoryBits },
+        { "setMaskBits",            _setMaskBits },
         { "setCollisionCallback",   _setCollisionCallback },
         { "clearCollisionCallback", _clearCollisionCallback },
         { nil, nil },
@@ -318,7 +322,29 @@ _getBodyType :: proc "c" (L: ^lua.State) -> i32 {
     entity := (^Entity)(lua.touserdata(L, 1))
     body_type := b2.Body_GetType(entity.body_id)
 
-    lua.pushnumber(L, lua.Number(body_type))
+    lua.pushinteger(L, lua.Integer(body_type))
+
+    return 1
+}
+
+_getCategoryBits :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+    category_bits := entity.shape.filter.categoryBits
+
+    lua.pushinteger(L, lua.Integer(category_bits))
+
+    return 1
+}
+
+_getMaskBits :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+    mask_bits := entity.shape.filter.maskBits
+
+    lua.pushinteger(L, lua.Integer(mask_bits))
 
     return 1
 }
@@ -420,10 +446,33 @@ _setBodyType :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     entity := (^Entity)(lua.touserdata(L, 1))
-    body_type := lua.tonumber(L, 2)
+    body_type := b2.BodyType(lua.tointeger(L, 2))
 
-    entity.body.type = b2.BodyType(body_type)
-    b2.Body_SetType(entity.body_id, entity.body.type)
+    b2.Body_SetType(entity.body_id, body_type)
+
+    return 0
+}
+
+_setCategoryBits :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+    category_bits := lua.tointeger(L, 2)
+
+    entity.shape.filter.categoryBits = u32(category_bits)
+    b2.Shape_SetFilter(entity.shape_id, entity.shape.filter)
+
+    return 0
+}
+
+_setMaskBits :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    entity := (^Entity)(lua.touserdata(L, 1))
+    mask_bits := lua.tointeger(L, 2)
+
+    entity.shape.filter.maskBits = u32(mask_bits)
+    b2.Shape_SetFilter(entity.shape_id, entity.shape.filter)
 
     return 0
 }
