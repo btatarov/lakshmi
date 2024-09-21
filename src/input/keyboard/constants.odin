@@ -137,3 +137,12 @@ KEYBOARD_MAP :: enum {
     KEY_RIGHT_SUPER     = glfw.KEY_RIGHT_SUPER,
     KEY_MENU            = glfw.KEY_MENU,
 }
+
+KEYBOARD_MOD :: enum {
+    MOD_SHIFT       = glfw.MOD_SHIFT,
+    MOD_CONTROL     = glfw.MOD_CONTROL,
+    MOD_ALT         = glfw.MOD_ALT,
+    MOD_SUPER       = glfw.MOD_SUPER,
+    MOD_CAPS_LOCK   = glfw.MOD_CAPS_LOCK,
+    MOD_NUM_LOCK    = glfw.MOD_NUM_LOCK,
+}

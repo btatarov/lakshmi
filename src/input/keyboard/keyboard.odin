@@ -28,6 +28,10 @@ LuaBind :: proc(L: ^lua.State) {
         lua.pushinteger(L, lua.Integer(KEYBOARD_MAP(name)))
         lua.setfield(L, -2, fmt.ctprintf("%s", name))
     }
+    for name, _ in KEYBOARD_MOD {
+        lua.pushinteger(L, lua.Integer(KEYBOARD_MOD(name)))
+        lua.setfield(L, -2, fmt.ctprintf("%s", name))
+    }
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
