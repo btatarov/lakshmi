@@ -104,6 +104,7 @@ List of available functions:
 * LakshmiBox2DEntity.getLinearVelocity(box)
 * LakshmiBox2DEntity.getAngularVelocity(box)
 * LakshmiBox2DEntity.getBodyType(box)
+* LakshmiBox2DEntity.getUniqueID(box)
 * LakshmiBox2DEntity.setBullet(box, bullet)
 * LakshmiBox2DEntity.setPos(box, x, y)
 * LakshmiBox2DEntity.setRot(box, angle)
