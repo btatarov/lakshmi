@@ -115,7 +115,7 @@ MainLoop :: proc() {
         window.time += delta_time
 
         // set window title to show FPS
-        title := fmt.ctprintf("%s - FPS: %f", window.title, 1 / delta_time)
+        title := fmt.ctprintf("%s - FPS: %.2f", window.title, 1 / delta_time)
         glfw.SetWindowTitle(window.handle, title)
 
         // handle events
