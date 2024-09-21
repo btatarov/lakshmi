@@ -23,8 +23,8 @@ Sprite :: struct {
     pivot:          linalg.Vector3f32,
     rotation:       f32,
     visible:        bool,
-    texture:        Texture.Texture,
     color:          linalg.Vector4f32,
+    texture:        Texture.Texture,
 
     quad:           [4 * 9]f32,
     indices:        [2 * 3]u32,
@@ -53,11 +53,13 @@ Sprite :: struct {
 Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     log.debugf("LakshmiSprite: Init\n")
 
-    img.scale   = 1
-    img.pivot   = {0, 0, 0}
-    img.visible = true
-    img.color   = {1, 1, 1, 1}
-    img.texture = texture^
+    img.position = {0, 0, 0}
+    img.scale    = 1
+    img.pivot    = {0, 0, 0}
+    img.rotation = 0
+    img.visible  = true
+    img.color    = {1, 1, 1, 1}
+    img.texture  = texture^
 
     // TODO: those should be different in the future
     img.width, img.height = u32(img.texture.width), u32(img.texture.height)
