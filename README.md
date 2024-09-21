@@ -11,6 +11,7 @@ List of available functions:
 * LakshmiWindow.open(title, width, height)
 * LakshmiWindow.clearLoopCallback()
 * LakshmiWindow.clearResizeCallback()
+* LakshmiWindow.getDeltaTime()
 * LakshmiWindow.setLoopCallback(callback)
 * LakshmiWindow.setResizeCallback(callback)
 * LakshmiWindow.setVsync(vsync)

@@ -23,6 +23,7 @@ Window :: struct {
 }
 
 @private window: Window
+@private delta_time: f64
 @private loop_callback_ref: i32 = lua.REFNIL
 @private resize_callback_ref: i32 = lua.REFNIL
 
@@ -77,6 +78,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "open",                _open },
         { "clearLoopCallback",   _clearLoopCallback },
         { "clearResizeCallback", _clearResizeCallback },
+        { "getDeltaTime",        _getDeltaTime },
         { "setLoopCallback",     _setLoopCallback },
         { "setResizeCallback",   _setResizeCallback },
         { "setVsync",            _setVsyc },
@@ -98,7 +100,6 @@ MainLoop :: proc() {
     log.debugf("LakshmiWindow: MainLoop\n")
 
     time: f64
-    delta_time: f64
     frame_time := glfw.GetTime()
     for ! glfw.WindowShouldClose(window.handle) {
         // calculate delta time
@@ -205,6 +206,14 @@ _clearResizeCallback :: proc "c" (L: ^lua.State) -> i32 {
     }
 
     return 0
+}
+
+_getDeltaTime :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    lua.pushnumber(L, lua.Number(delta_time))
+
+    return 1
 }
 
 _setLoopCallback :: proc "c" (L: ^lua.State) -> i32 {
