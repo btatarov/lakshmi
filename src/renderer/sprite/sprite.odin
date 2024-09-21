@@ -54,6 +54,7 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     log.debugf("LakshmiSprite: Init\n")
 
     img.scale   = 1
+    img.pivot   = {0, 0, 0}
     img.visible = true
     img.color   = {1, 1, 1, 1}
     img.texture = texture^
@@ -213,6 +214,7 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     piv_normalized.x = (img.pivot.x + f32(screen_width) * 0.5) / f32(screen_width)
     piv_normalized.x = piv_normalized.x * screen_ratio * 2 - screen_ratio
     piv_normalized.y = (img.pivot.y + f32(screen_height) * 0.5) / f32(screen_height)
+    piv_normalized.y = piv_normalized.y * 2 - 1
 
     size_normalized: linalg.Vector3f32
     size_normalized.x = f32(img.width) / f32(screen_width) * screen_ratio
@@ -220,13 +222,14 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
 
     model_matrix: linalg.Matrix4f32 = 1
 
+    model_matrix *= linalg.matrix4_translate(pos_normalized)
+
     model_matrix *= linalg.matrix4_scale(img.scale)
 
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{piv_normalized.x, piv_normalized.y, 0})
     model_matrix *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{-piv_normalized.x, -piv_normalized.y, 0})
 
-    model_matrix *= linalg.matrix4_translate(pos_normalized)
 
     a := model_matrix * linalg.Vector4f32{ size_normalized.x,  size_normalized.y, 0.0, 1.0}
     b := model_matrix * linalg.Vector4f32{ size_normalized.x, -size_normalized.y, 0.0, 1.0}
