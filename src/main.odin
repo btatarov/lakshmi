@@ -8,7 +8,7 @@ import JSON "json"
 import LuaRuntime "lua"
 
 import Audio "audio"
-import Keyboard "input/keyboard"
+import Input "input"
 import LakshmiContext "base/context"
 import Renderer "renderer"
 import Camera "renderer/camera"
@@ -51,8 +51,8 @@ main :: proc() {
     Audio.LuaBind(L)
     defer Audio.LuaUnbind(L)
 
-    Keyboard.LuaBind(L)
-    defer Keyboard.LuaUnbind(L)
+    Input.LuaBind(L)
+    defer Input.LuaUnbind(L)
 
     Window.LuaBind(L)
     defer Window.LuaUnbind(L)

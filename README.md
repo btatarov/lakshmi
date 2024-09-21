@@ -125,6 +125,12 @@ List of available functions:
 * LakshmiKeyboard.clearCallback()
 * LakshmiKeyboard.setCallback(callback)
 
+### Gamepad
+
+* LakshmiGamepad.isPresent()
+* LakshmiGamepad.clearCallback()
+* LakshmiGamepad.setCallback(callback)
+
 ### Audio
 
 #### System

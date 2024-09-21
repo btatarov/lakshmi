@@ -9,6 +9,7 @@ import lua "vendor:lua/5.4"
 import gl "vendor:OpenGL"
 
 import Keyboard "../input/keyboard"
+import Gamepad "../input/gamepad"
 import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 import Renderer "../renderer"
@@ -120,6 +121,11 @@ MainLoop :: proc() {
 
         // handle events
         glfw.PollEvents()
+
+        // update gamepad
+        if glfw.JoystickPresent(glfw.JOYSTICK_1) && glfw.JoystickIsGamepad(glfw.JOYSTICK_1) {
+            Gamepad.Update()
+        }
 
         // logic
         if loop_callback_ref != lua.REFNIL {
