@@ -53,8 +53,9 @@ Sprite :: struct {
 Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     log.debugf("LakshmiSprite: Init\n")
 
-    img.scale = 1
+    img.scale   = 1
     img.visible = true
+    img.color   = {1, 1, 1, 1}
     img.texture = texture^
 
     // TODO: those should be different in the future
