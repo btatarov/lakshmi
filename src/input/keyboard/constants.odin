@@ -5,6 +5,7 @@ import "vendor:glfw"
 KEYBOARD_EVENT :: enum {
     KEY_PRESS_ACTION    = glfw.PRESS,
     KEY_RELEASE_ACTION  = glfw.RELEASE,
+    KEY_REPEAT_ACTION   = glfw.REPEAT,
 }
 
 KEYBOARD_MAP :: enum {
