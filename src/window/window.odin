@@ -2,6 +2,7 @@ package window
 
 import "core:fmt"
 import "core:log"
+import "core:time"
 
 import "vendor:glfw"
 import lua "vendor:lua/5.4"
@@ -24,6 +25,7 @@ Window :: struct {
 
 @private window: Window
 @private delta_time: f64
+@private frame_duration: f64 = 1 / f64(60)
 @private loop_callback_ref: i32 = lua.REFNIL
 @private resize_callback_ref: i32 = lua.REFNIL
 
@@ -81,6 +83,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getDeltaTime",        _getDeltaTime },
         { "setLoopCallback",     _setLoopCallback },
         { "setResizeCallback",   _setResizeCallback },
+        { "setTargetFPS",        _setTargetFPS },
         { "setVsync",            _setVsyc },
         { "quit",                _quit },
         { nil, nil },
@@ -99,13 +102,13 @@ MainLoop :: proc() {
 
     log.debugf("LakshmiWindow: MainLoop\n")
 
-    time: f64
+    cur_time: f64
     frame_time := glfw.GetTime()
     for ! glfw.WindowShouldClose(window.handle) {
         // calculate delta time
-        time = glfw.GetTime()
-        delta_time = time - frame_time
-        frame_time = time
+        cur_time = glfw.GetTime()
+        delta_time = cur_time - frame_time
+        frame_time = cur_time
 
         // update totals
         window.frames += 1
@@ -132,6 +135,13 @@ MainLoop :: proc() {
         // render
         Renderer.Render()
         glfw.SwapBuffers(window.handle)
+
+        // frame limit
+        frame_time_spent := glfw.GetTime() - cur_time
+        defer if frame_time_spent < frame_duration {
+            sleep_time := frame_duration - frame_time_spent
+            time.accurate_sleep(time.Duration(sleep_time * f64(time.Second)))
+        }
 
         // cleanup
         free_all(context.temp_allocator)
@@ -240,6 +250,15 @@ _setResizeCallback :: proc "c" (L: ^lua.State) -> i32 {
     }
 
     resize_callback_ref = lua.L_ref(L, lua.REGISTRYINDEX)
+
+    return 0
+}
+
+_setTargetFPS :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    fps := lua.L_checknumber(L, 1)
+    frame_duration = 1 / f64(fps)
 
     return 0
 }
