@@ -26,3 +26,7 @@ LuaUnbind :: proc(L: ^lua.State) {
     Circle.LuaUnbind(L)
     Polygon.LuaUnbind(L)
 }
+
+Update :: proc(delta_time: f64) {
+    World.Update(delta_time)
+}

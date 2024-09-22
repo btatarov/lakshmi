@@ -54,7 +54,6 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "init",               _init },
         { "destroy",            _destroy },
-        { "update",             _update },
         { "setGravity",         _setGravity },
         { "setUnitsPerMeter",   _setUnitsPerMeter },
         { "setUpdateSteps",     _setUpdateSteps },
@@ -94,29 +93,9 @@ HandleCollision :: proc(entity_a, entity_b: ^Entity.Entity, type: Entity.Collisi
     event.self->handle_collision(event)
 }
 
-_init :: proc "c" (L: ^lua.State) -> i32 {
-    context = LakshmiContext.GetDefault()
-
-    Init()
-
-    return 0
-}
-
-_destroy :: proc "c" (L: ^lua.State) -> i32 {
-    context = LakshmiContext.GetDefault()
-
-    Destroy()
-
-    return 0
-}
-
-_update :: proc "c" (L: ^lua.State) -> i32 {
-    context = LakshmiContext.GetDefault()
-
-    step := lua.tonumber(L, 1)
-
+Update :: proc(delta_time: f64) {
     if world.is_active {
-        b2.World_Step(world.id, f32(step), world.steps)
+        b2.World_Step(world.id, f32(delta_time), world.steps)
 
         contact_events := b2.World_GetContactEvents(world.id)
         for idx in 0..<contact_events.beginCount {
@@ -135,6 +114,20 @@ _update :: proc "c" (L: ^lua.State) -> i32 {
             HandleCollision(entity_a, entity_b, .Hit)
         }
     }
+}
+
+_init :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    Init()
+
+    return 0
+}
+
+_destroy :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    Destroy()
 
     return 0
 }

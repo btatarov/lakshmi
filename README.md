@@ -65,7 +65,6 @@ List of available functions:
 
 * LakshmiBox2DWorld.init()
 * LakshmiBox2DWorld.destroy()
-* LakshmiBox2DWorld.update(dt)
 * LakshmiBox2DWorld.setGravity(x, y)
 * LakshmiBox2DWorld.setUnitsPerMeter(upm)
 * LakshmiBox2DWorld.setUpdateSteps(steps)

@@ -71,8 +71,6 @@ end
 
 frames = 0
 LakshmiWindow.setLoopCallback(function(delta)
-    LakshmiBox2DWorld.update(delta)
-
     for _, entity in pairs(entities) do
         entity.sprite:setPos(entity.entity:getPos())
         entity.sprite:setRot(entity.entity:getRot())

@@ -2,6 +2,7 @@ package window
 
 import "core:fmt"
 import "core:log"
+import "core:strings"
 import "core:time"
 
 import "vendor:glfw"
@@ -13,15 +14,19 @@ import Gamepad "../input/gamepad"
 import LakshmiContext "../base/context"
 import LuaRuntime "../lua"
 import Renderer "../renderer"
+import Box2D "../box2d"
 
 OPENGL_VERSION_MAJOR :: 4
 OPENGL_VERSION_MINOR :: 1
 
+PHYSICS_TIMESTEP :: 1 / f64(60)
+MAX_FRAME_TIME   :: 1 / f64(5)
+
 Window :: struct {
     handle:         glfw.WindowHandle,
-    title:          cstring,
-    frames:         i32,
+    frames:         i64,
     time:           f64,
+    title:          string,
 }
 
 @private window: Window
@@ -46,7 +51,7 @@ Init :: proc(title : cstring, width, height : i32) {
         glfw.WindowHint(glfw.COCOA_RETINA_FRAMEBUFFER, glfw.FALSE)
     }
 
-    window.title = title
+    window.title = strings.clone_from_cstring(title)
     window.handle = glfw.CreateWindow(width, height, title, nil, nil)
     assert(window.handle != nil, "Failed to create GLFW window")
 
@@ -103,20 +108,23 @@ MainLoop :: proc() {
 
     log.debugf("LakshmiWindow: MainLoop\n")
 
+
     cur_time: f64
+    accumulator: f64
     frame_time := glfw.GetTime()
     for ! glfw.WindowShouldClose(window.handle) {
         // calculate delta time
         cur_time = glfw.GetTime()
-        delta_time = cur_time - frame_time
+        delta_time = clamp(cur_time - frame_time, 0, MAX_FRAME_TIME)
         frame_time = cur_time
 
         // update totals
-        window.frames += 1
-        window.time += delta_time
+        // window.frames += 1
+        // window.time += delta_time
+        accumulator += delta_time
 
         // set window title to show FPS
-        title := fmt.ctprintf("%s - FPS: %.2f", window.title, 1 / delta_time)
+        title := fmt.ctprintf("%s - FPS: %.4f", window.title, 1 / delta_time)
         glfw.SetWindowTitle(window.handle, title)
 
         // handle events
@@ -125,6 +133,12 @@ MainLoop :: proc() {
         // update gamepad
         if glfw.JoystickPresent(glfw.JOYSTICK_1) && glfw.JoystickIsGamepad(glfw.JOYSTICK_1) {
             Gamepad.Update()
+        }
+
+        // physics
+        for accumulator >= PHYSICS_TIMESTEP {
+            Box2D.Update(PHYSICS_TIMESTEP)
+            accumulator -= PHYSICS_TIMESTEP
         }
 
         // logic
