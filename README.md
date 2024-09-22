@@ -44,6 +44,7 @@ List of available functions:
 * LakshmiSprite.getPos(sprite)
 * LakshmiSprite.getRot(sprite)
 * LakshmiSprite.getScl(sprite)
+* LakshmiSprite.getSize(sprite)
 * LakshmiSprite.getUV(sprite)
 * LakshmiSprite.isVisible(sprite)
 * LakshmiSprite.setColor(sprite, r, g, b, a)
@@ -51,6 +52,7 @@ List of available functions:
 * LakshmiSprite.setPos(sprite, x, y)
 * LakshmiSprite.setRot(sprite, angle)
 * LakshmiSprite.setScl(sprite, x, y)
+* LakshmiSprite.setSize(sprite, w, h)
 * LakshmiSprite.setUV(sprite, u, v, w, h)
 * LakshmiSprite.setVisible(sprite, visible)
 

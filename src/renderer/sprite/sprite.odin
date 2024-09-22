@@ -44,6 +44,7 @@ Sprite :: struct {
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_rotation:   proc(img: ^Sprite) -> f32,
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
+    get_size:       proc(img: ^Sprite) -> (u32, u32),
     get_uv:         proc(img: ^Sprite) -> (f32, f32, f32, f32),
     is_visible:     proc(img: ^Sprite) -> bool,
     set_color:      proc(img: ^Sprite, color: linalg.Vector4f32),
@@ -51,6 +52,7 @@ Sprite :: struct {
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
     set_scale:      proc(img: ^Sprite, x, y: f32),
+    set_size:       proc(img: ^Sprite, width, height: u32),
     set_uv:         proc(img: ^Sprite, u, v, w, h: f32),
     set_visible:    proc(img: ^Sprite, visible: bool),
     render:         proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
@@ -100,6 +102,7 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
     img.get_scale    = sprite_get_scale
+    img.get_size     = sprite_get_size
     img.get_uv       = sprite_get_uv
     img.is_visible   = sprite_is_visible
     img.set_color    = sprite_set_color
@@ -107,6 +110,7 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.set_position = sprite_set_position
     img.set_rotation = sprite_set_rotation
     img.set_scale    = sprite_set_scale
+    img.set_size     = sprite_set_size
     img.set_uv       = sprite_set_uv
     img.set_visible  = sprite_set_visible
     img.render       = sprite_render
@@ -130,6 +134,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getPos",     _get_pos },
         { "getRot",     _get_rot},
         { "getScl",     _get_scl },
+        { "getSize",    _get_size },
         { "getUV",      _get_uv },
         { "isVisible",  _get_visible },
         { "setColor",   _set_color },
@@ -137,6 +142,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "setPos",     _set_pos },
         { "setRot",     _set_rot },
         { "setScl",     _set_scl },
+        { "setSize",    _set_size },
         { "setUV",      _set_uv },
         { "setVisible", _set_visible },
         { nil, nil },
@@ -168,9 +174,8 @@ sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
     return img.scale.x, img.scale.y
 }
 
-sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
-    img.pivot = {f32(x), f32(y), 0}
-    img.is_dirty = true
+sprite_get_size :: proc(img: ^Sprite) -> (u32, u32) {
+    return img.width, img.height
 }
 
 sprite_get_uv :: proc(img: ^Sprite) -> (f32, f32, f32, f32) {
@@ -183,6 +188,10 @@ sprite_is_visible :: proc(img: ^Sprite) -> bool {
 
 sprite_set_color :: proc(img: ^Sprite, color: linalg.Vector4f32) {
     img.color = color
+    img.is_dirty = true
+}
+sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
+    img.pivot = {f32(x), f32(y), 0}
     img.is_dirty = true
 }
 
@@ -198,6 +207,12 @@ sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
 
 sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
     img.scale = {f32(x), f32(y), 1}
+    img.is_dirty = true
+}
+
+sprite_set_size :: proc(img: ^Sprite, width, height: u32) {
+    img.width = width
+    img.height = height
     img.is_dirty = true
 }
 
@@ -383,6 +398,18 @@ _get_scl :: proc "c" (L: ^lua.State) -> i32 {
     return 2
 }
 
+_get_size :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    w, h := sprite->get_size()
+
+    lua.pushnumber(L, lua.Number(w))
+    lua.pushnumber(L, lua.Number(h))
+
+    return 2
+}
+
 _get_uv :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -460,6 +487,17 @@ _set_scl :: proc "c" (L: ^lua.State) -> i32 {
     x := f32(lua.tonumber(L, -2))
     y := f32(lua.tonumber(L, -1))
     sprite->set_scale(x, y)
+
+    return 0
+}
+
+_set_size :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -3))
+    w := u32(lua.tonumber(L, -2))
+    h := u32(lua.tonumber(L, -1))
+    sprite->set_size(w, h)
 
     return 0
 }
