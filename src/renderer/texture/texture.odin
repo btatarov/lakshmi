@@ -35,7 +35,6 @@ InitWithPath :: proc(path: string) -> Texture {
         return tex
     }
 
-    stbi.set_flip_vertically_on_load(1)
     data := stbi.load(strings.clone_to_cstring(path, context.temp_allocator), &tex.width, &tex.height, &tex.channels, 0)
     assert(data != nil, fmt.tprintf("Failed to load texture: %s", path))
     defer stbi.image_free(data)

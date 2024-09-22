@@ -79,10 +79,10 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
 
     img.quad = {
         // positions        // colors               // uv coords
+        -0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 0.0,  // top left
          0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 1.0,  // top right
-         0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 0.0,  // bottom right
+         0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 1.0,  // bottom right
         -0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 0.0,  // bottom left
-        -0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 1.0,  // top left
     }
 
     img.indices = {
@@ -314,13 +314,13 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
 
     // set uv coords
     img.quad[7]  = img.u1
-    img.quad[8]  = img.v1
+    img.quad[8]  = img.v0
     img.quad[16] = img.u1
-    img.quad[17] = img.v0
+    img.quad[17] = img.v1
     img.quad[25] = img.u0
-    img.quad[26] = img.v0
+    img.quad[26] = img.v1
     img.quad[34] = img.u0
-    img.quad[35] = img.v1
+    img.quad[35] = img.v0
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
