@@ -175,7 +175,7 @@ sprite_get_size :: proc(img: ^Sprite) -> (u32, u32) {
 }
 
 sprite_get_uv :: proc(img: ^Sprite) -> (f32, f32, f32, f32) {
-    return img.uv0.x, img.uv0.y, img.uv1.x - img.uv0.x, img.uv1.y - img.uv0.y
+    return expand_values(img.uv0), expand_values(img.uv1)
 }
 
 sprite_is_visible :: proc(img: ^Sprite) -> bool {
@@ -287,10 +287,10 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     swizzle(img.quad, 30, 31, 32, 33) = img.color
 
     // set uv coords
-    swizzle(img.quad, 7, 8)    = {img.uv0.x, img.uv0.y}
-    swizzle(img.quad, 16, 17)  = {img.uv1.x, img.uv0.y}
-    swizzle(img.quad, 25, 26)  = {img.uv1.x, img.uv1.y}
-    swizzle(img.quad, 34, 35)  = {img.uv0.x, img.uv1.y}
+    swizzle(img.quad, 7, 8)   = {img.uv0.x, img.uv0.y}
+    swizzle(img.quad, 16, 17) = {img.uv1.x, img.uv0.y}
+    swizzle(img.quad, 25, 26) = {img.uv1.x, img.uv1.y}
+    swizzle(img.quad, 34, 35) = {img.uv0.x, img.uv1.y}
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
