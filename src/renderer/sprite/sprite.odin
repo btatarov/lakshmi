@@ -79,10 +79,10 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
 
     img.quad = {
         // positions        // colors               // uv coords
-        -0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 0.0,  // top left
-         0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 1.0,  // top right
-         0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 1.0,  // bottom right
-        -0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 0.0,  // bottom left
+        -0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 0.0,  // top left
+         0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 0.0,  // top right
+         0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 1.0,  // bottom right
+        -0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 1.0,  // bottom left
     }
 
     img.indices = {
@@ -220,7 +220,7 @@ sprite_set_uv :: proc(img: ^Sprite, u, v, w, h: f32) {
     img.u0 = u
     img.v0 = v
     img.u1 = u + w
-    img.v1 = u + h
+    img.v1 = v + h
     img.is_dirty = true
 }
 
@@ -275,10 +275,10 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{-piv_normalized.x, -piv_normalized.y, 0})
 
 
-    a := model_matrix * linalg.Vector4f32{ size_normalized.x,  size_normalized.y, 0.0, 1.0}
-    b := model_matrix * linalg.Vector4f32{ size_normalized.x, -size_normalized.y, 0.0, 1.0}
-    c := model_matrix * linalg.Vector4f32{-size_normalized.x, -size_normalized.y, 0.0, 1.0}
-    d := model_matrix * linalg.Vector4f32{-size_normalized.x,  size_normalized.y, 0.0, 1.0}
+    a := model_matrix * linalg.Vector4f32{-size_normalized.x,  size_normalized.y, 0.0, 1.0}  // top left
+    b := model_matrix * linalg.Vector4f32{ size_normalized.x,  size_normalized.y, 0.0, 1.0}  // top right
+    c := model_matrix * linalg.Vector4f32{ size_normalized.x, -size_normalized.y, 0.0, 1.0}  // bottom right
+    d := model_matrix * linalg.Vector4f32{-size_normalized.x, -size_normalized.y, 0.0, 1.0}  // bottom left
 
     // set positions
     img.quad[0]  = a[0]
@@ -313,14 +313,14 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     img.quad[33] = img.color.a
 
     // set uv coords
-    img.quad[7]  = img.u1
+    img.quad[7]  = img.u0
     img.quad[8]  = img.v0
     img.quad[16] = img.u1
-    img.quad[17] = img.v1
-    img.quad[25] = img.u0
+    img.quad[17] = img.v0
+    img.quad[25] = img.u1
     img.quad[26] = img.v1
     img.quad[34] = img.u0
-    img.quad[35] = img.v0
+    img.quad[35] = img.v1
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
