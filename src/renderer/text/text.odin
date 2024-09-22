@@ -71,15 +71,6 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
         } else {
             bitmap = stbtt.GetCodepointBitmap(&font, 0, scale, char, &width, &height, &x_offset, &y_offset)
 
-            // flip vertically
-            for y: i32 = 0; y < height / 2; y += 1 {
-                for x: i32 = 0; x < width; x += 1 {
-                    i0 := y * width + x
-                    i1 := (height - y - 1) * width + x
-                    bitmap[i0], bitmap[i1] = bitmap[i1], bitmap[i0]
-                }
-            }
-
             glyph_cache[identifier] = GlyphCache {
                 font_path = font_path,
                 char      = char,
