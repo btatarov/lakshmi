@@ -26,10 +26,8 @@ Sprite :: struct {
 
     texture:        Texture.Texture,
     color:          linalg.Vector4f32,
-    u0:             f32,
-    v0:             f32,
-    u1:             f32,
-    v1:             f32,
+    uv0:            linalg.Vector2f32,
+    uv1:            linalg.Vector2f32,
 
     quad:           [4 * 9]f32,
     indices:        [2 * 3]u32,
@@ -70,10 +68,8 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
 
     img.texture  = texture^
     img.color    = {1, 1, 1, 1}
-    img.u0       = 0
-    img.v0       = 0
-    img.u1       = 1
-    img.v1       = 1
+    img.uv0      = {0, 0}
+    img.uv1      = {1, 1}
 
     img.width, img.height = u32(img.texture.width), u32(img.texture.height)
 
@@ -179,7 +175,7 @@ sprite_get_size :: proc(img: ^Sprite) -> (u32, u32) {
 }
 
 sprite_get_uv :: proc(img: ^Sprite) -> (f32, f32, f32, f32) {
-    return img.u0, img.v0, img.u1 - img.u0, img.v1 - img.v0
+    return img.uv0.x, img.uv0.y, img.uv1.x - img.uv0.x, img.uv1.y - img.uv0.y
 }
 
 sprite_is_visible :: proc(img: ^Sprite) -> bool {
@@ -217,10 +213,8 @@ sprite_set_size :: proc(img: ^Sprite, width, height: u32) {
 }
 
 sprite_set_uv :: proc(img: ^Sprite, u, v, w, h: f32) {
-    img.u0 = u
-    img.v0 = v
-    img.u1 = u + w
-    img.v1 = v + h
+    img.uv0 = {u, v}
+    img.uv1 = {u + w, v + h}
     img.is_dirty = true
 }
 
@@ -281,46 +275,22 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     d := model_matrix * linalg.Vector4f32{-size_normalized.x, -size_normalized.y, 0.0, 1.0}  // bottom left
 
     // set positions
-    img.quad[0]  = a[0]
-    img.quad[1]  = a[1]
-    img.quad[2]  = a[2]
-    img.quad[9]  = b[0]
-    img.quad[10] = b[1]
-    img.quad[11] = b[2]
-    img.quad[18] = c[0]
-    img.quad[19] = c[1]
-    img.quad[20] = c[2]
-    img.quad[27] = d[0]
-    img.quad[28] = d[1]
-    img.quad[29] = d[2]
+    swizzle(img.quad, 0, 1, 2)    = a.xyz
+    swizzle(img.quad, 9, 10, 11)  = b.xyz
+    swizzle(img.quad, 18, 19, 20) = c.xyz
+    swizzle(img.quad, 27, 28, 29) = d.xyz
 
     // set color
-    img.quad[3]  = img.color.r
-    img.quad[4]  = img.color.g
-    img.quad[5]  = img.color.b
-    img.quad[6]  = img.color.a
-    img.quad[12] = img.color.r
-    img.quad[13] = img.color.g
-    img.quad[14] = img.color.b
-    img.quad[15] = img.color.a
-    img.quad[21] = img.color.r
-    img.quad[22] = img.color.g
-    img.quad[23] = img.color.b
-    img.quad[24] = img.color.a
-    img.quad[30] = img.color.r
-    img.quad[31] = img.color.g
-    img.quad[32] = img.color.b
-    img.quad[33] = img.color.a
+    swizzle(img.quad, 3, 4, 5, 6)     = img.color
+    swizzle(img.quad, 12, 13, 14, 15) = img.color
+    swizzle(img.quad, 21, 22, 23, 24) = img.color
+    swizzle(img.quad, 30, 31, 32, 33) = img.color
 
     // set uv coords
-    img.quad[7]  = img.u0
-    img.quad[8]  = img.v0
-    img.quad[16] = img.u1
-    img.quad[17] = img.v0
-    img.quad[25] = img.u1
-    img.quad[26] = img.v1
-    img.quad[34] = img.u0
-    img.quad[35] = img.v1
+    swizzle(img.quad, 7, 8)    = {img.uv0.x, img.uv0.y}
+    swizzle(img.quad, 16, 17)  = {img.uv1.x, img.uv0.y}
+    swizzle(img.quad, 25, 26)  = {img.uv1.x, img.uv1.y}
+    swizzle(img.quad, 34, 35)  = {img.uv0.x, img.uv1.y}
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
