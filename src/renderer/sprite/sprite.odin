@@ -23,8 +23,13 @@ Sprite :: struct {
     pivot:          linalg.Vector3f32,
     rotation:       f32,
     visible:        bool,
-    color:          linalg.Vector4f32,
+
     texture:        Texture.Texture,
+    color:          linalg.Vector4f32,
+    u0:             f32,
+    v0:             f32,
+    u1:             f32,
+    v1:             f32,
 
     quad:           [4 * 9]f32,
     indices:        [2 * 3]u32,
@@ -39,12 +44,14 @@ Sprite :: struct {
     get_position:   proc(img: ^Sprite) -> (f32, f32),
     get_rotation:   proc(img: ^Sprite) -> f32,
     get_scale:      proc(img: ^Sprite) -> (f32, f32),
+    get_uv:         proc(img: ^Sprite) -> (f32, f32, f32, f32),
     is_visible:     proc(img: ^Sprite) -> bool,
     set_color:      proc(img: ^Sprite, color: linalg.Vector4f32),
     set_pivot:      proc(img: ^Sprite, x, y: f32),
     set_position:   proc(img: ^Sprite, x, y: f32),
     set_rotation:   proc(img: ^Sprite, angle: f32),
     set_scale:      proc(img: ^Sprite, x, y: f32),
+    set_uv:         proc(img: ^Sprite, u, v, w, h: f32),
     set_visible:    proc(img: ^Sprite, visible: bool),
     render:         proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
     update_quad:    proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
@@ -58,10 +65,14 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.pivot    = {0, 0, 0}
     img.rotation = 0
     img.visible  = true
-    img.color    = {1, 1, 1, 1}
-    img.texture  = texture^
 
-    // TODO: those should be different in the future
+    img.texture  = texture^
+    img.color    = {1, 1, 1, 1}
+    img.u0       = 0
+    img.v0       = 0
+    img.u1       = 1
+    img.v1       = 1
+
     img.width, img.height = u32(img.texture.width), u32(img.texture.height)
 
     img.quad = {
@@ -89,12 +100,14 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.get_position = sprite_get_position
     img.get_rotation = sprite_get_rotation
     img.get_scale    = sprite_get_scale
+    img.get_uv       = sprite_get_uv
     img.is_visible   = sprite_is_visible
     img.set_color    = sprite_set_color
     img.set_pivot    = sprite_set_pivot
     img.set_position = sprite_set_position
     img.set_rotation = sprite_set_rotation
     img.set_scale    = sprite_set_scale
+    img.set_uv       = sprite_set_uv
     img.set_visible  = sprite_set_visible
     img.render       = sprite_render
     img.update_quad  = sprite_update_quad
@@ -117,12 +130,14 @@ LuaBind :: proc(L: ^lua.State) {
         { "getPos",     _get_pos },
         { "getRot",     _get_rot},
         { "getScl",     _get_scl },
+        { "getUV",      _get_uv },
         { "isVisible",  _get_visible },
         { "setColor",   _set_color },
         { "setPiv",     _set_piv },
         { "setPos",     _set_pos },
         { "setRot",     _set_rot },
         { "setScl",     _set_scl },
+        { "setUV",      _set_uv },
         { "setVisible", _set_visible },
         { nil, nil },
     }
@@ -158,6 +173,10 @@ sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
     img.is_dirty = true
 }
 
+sprite_get_uv :: proc(img: ^Sprite) -> (f32, f32, f32, f32) {
+    return img.u0, img.v0, img.u1 - img.u0, img.v1 - img.v0
+}
+
 sprite_is_visible :: proc(img: ^Sprite) -> bool {
     return img.visible
 }
@@ -179,6 +198,14 @@ sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
 
 sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
     img.scale = {f32(x), f32(y), 1}
+    img.is_dirty = true
+}
+
+sprite_set_uv :: proc(img: ^Sprite, u, v, w, h: f32) {
+    img.u0 = u
+    img.v0 = v
+    img.u1 = u + w
+    img.v1 = u + h
     img.is_dirty = true
 }
 
@@ -269,6 +296,16 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     img.quad[31] = img.color.g
     img.quad[32] = img.color.b
     img.quad[33] = img.color.a
+
+    // set uv coords
+    img.quad[7]  = img.u1
+    img.quad[8]  = img.v1
+    img.quad[16] = img.u1
+    img.quad[17] = img.v0
+    img.quad[25] = img.u0
+    img.quad[26] = img.v0
+    img.quad[34] = img.u0
+    img.quad[35] = img.v1
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {
@@ -346,6 +383,20 @@ _get_scl :: proc "c" (L: ^lua.State) -> i32 {
     return 2
 }
 
+_get_uv :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -1))
+    u, v, w, h := sprite->get_uv()
+
+    lua.pushnumber(L, lua.Number(u))
+    lua.pushnumber(L, lua.Number(v))
+    lua.pushnumber(L, lua.Number(w))
+    lua.pushnumber(L, lua.Number(h))
+
+    return 4
+}
+
 _get_visible :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -409,6 +460,19 @@ _set_scl :: proc "c" (L: ^lua.State) -> i32 {
     x := f32(lua.tonumber(L, -2))
     y := f32(lua.tonumber(L, -1))
     sprite->set_scale(x, y)
+
+    return 0
+}
+
+_set_uv :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    sprite := (^Sprite)(lua.touserdata(L, -5))
+    u := f32(lua.tonumber(L, -4))
+    v := f32(lua.tonumber(L, -3))
+    w := f32(lua.tonumber(L, -2))
+    h := f32(lua.tonumber(L, -1))
+    sprite->set_uv(u, v, w, h)
 
     return 0
 }
