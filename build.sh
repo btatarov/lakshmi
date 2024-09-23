@@ -14,7 +14,7 @@ fi
 
 extra_args="-show-timings"
 if [ $build == "debug" ]; then
-    extra_args="$extra_args -debug -vet"
+    extra_args="$extra_args -debug -vet -use-separate-modules"
 fi
 
 odin run src/ -out=build/lakshmi $extra_args -- $script
