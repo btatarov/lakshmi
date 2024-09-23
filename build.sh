@@ -12,9 +12,11 @@ if [[ ! " ${ALLOWED_BUILDS[@]} " =~ " ${build} " ]]; then
     exit 1
 fi
 
-extra_args="-show-timings"
+extra_args="-use-separate-modules -show-timings"
 if [ $build == "debug" ]; then
-    extra_args="$extra_args -debug -vet -use-separate-modules"
+    extra_args="$extra_args -debug -vet -strict-style -o:none"
+else
+    extra_args="$extra_args -obfuscate-source-code-locations -o:speed"
 fi
 
 odin run src/ -out=build/lakshmi $extra_args -- $script
