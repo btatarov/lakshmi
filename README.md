@@ -1,6 +1,6 @@
 # Lakshmi
 
-Lakshmi is an OpenGL 2D game engine with Lua scripting written in Odin. Work in progress.
+Lakshmi is an OpenGL 2D game engine with Box2D physics and Lua scripting. Written in Odin. Work in progress.
 
 ## Lua API
 
@@ -159,3 +159,12 @@ List of available functions:
 
 * LakshmiJSON.decode(json_string)
 * LakshmiJSON.encode(lua_table)
+
+## License
+
+This project is licensed under the Apache 2.0 License. For more information, see the [LICENSE](LICENSE) file.
+
+
+## Maintainers
+
+- [Bogdan Tatarov](https://github.com/btatarov)
