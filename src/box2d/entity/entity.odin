@@ -29,12 +29,12 @@ Init :: proc(entity: ^Entity, primitive: ^Primitive, is_sensor: bool) {
     entity.shape.isSensor = is_sensor
 
     switch primitive.type {
-        case .Polygon:
-            entity.shape_id = b2.CreatePolygonShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Polygon))
-        case .Circle:
-            entity.shape_id = b2.CreateCircleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Circle))
-        case .Capsule:
-            entity.shape_id = b2.CreateCapsuleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Capsule))
+    case .Polygon:
+        entity.shape_id = b2.CreatePolygonShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Polygon))
+    case .Circle:
+        entity.shape_id = b2.CreateCircleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Circle))
+    case .Capsule:
+        entity.shape_id = b2.CreateCapsuleShape(entity.body_id, entity.shape, entity.primitive.data.(b2.Capsule))
     }
 
     entity.handle_collision = entity_handle_collision

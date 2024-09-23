@@ -91,19 +91,19 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
 
     // TODO: in the future these should have some type of inheritance instead
     switch type {
-        case RenderableType.Sprite:
-            renderable: Renderable = {
-                data = (^Sprite.Sprite)(lua.touserdata(L, 2)),
-                type = .Sprite,
-            }
-            append(&layer.renderables, renderable)
+    case RenderableType.Sprite:
+        renderable: Renderable = {
+            data = (^Sprite.Sprite)(lua.touserdata(L, 2)),
+            type = .Sprite,
+        }
+        append(&layer.renderables, renderable)
 
-        case RenderableType.Text:
-            renderable: Renderable = {
-                data = (^Text.Text)(lua.touserdata(L, 2)),
-                type = .Text,
-            }
-            append(&layer.renderables, renderable)
+    case RenderableType.Text:
+        renderable: Renderable = {
+            data = (^Text.Text)(lua.touserdata(L, 2)),
+            type = .Text,
+        }
+        append(&layer.renderables, renderable)
     }
 
     return 0

@@ -16,8 +16,7 @@ Init :: proc(primitive: ^Box2DEntity.Primitive, width, height, radius: f32) {
     box: b2.Polygon
     if radius != 0 {
         box = b2.MakeRoundedBox(width, height, radius)
-    }
-    else {
+    } else {
         box = b2.MakeBox(width, height)
     }
 

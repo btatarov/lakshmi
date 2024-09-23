@@ -59,56 +59,55 @@ JsonToLua :: proc(L: ^lua.State, json_data: json.Value) {
 
 LuaToJson :: proc(L: ^lua.State, idx: i32) -> json.Value {
     #partial switch lua.type(L, idx) {
-        case lua.TTABLE:
-            if lua.L_len(L, idx) > 0 {
-                arr: json.Array
-                key: i32 = 1
-                for {
-                    LuaRuntime.GetField(L, idx, key)
-                    value := LuaToJson(L, -1)
-                    lua.pop(L, 1)
-                    if value != nil {
-                        append(&arr, value)
-                    }
-                    else {
-                        break
-                    }
-                    key += 1
+    case lua.TTABLE:
+        if lua.L_len(L, idx) > 0 {
+            arr: json.Array
+            key: i32 = 1
+            for {
+                LuaRuntime.GetField(L, idx, key)
+                value := LuaToJson(L, -1)
+                lua.pop(L, 1)
+                if value != nil {
+                    append(&arr, value)
+                } else {
+                    break
                 }
-                return arr
-            } else {
-                object := json.Object{}
-                itr := LuaRuntime.PushTableItr(L, idx)
-                for {
-                    if ! LuaRuntime.TableItrNext(L, itr) {
-                        break
-                    }
-                    if lua.type(L, -2) != lua.TSTRING {
-                        continue
-                    }
-                    key := lua.tostring(L, -2)
-                    value := LuaToJson(L, -1)
-                    if value != nil {
-                        object[string(key)] = value
-                    }
-                }
-                return object
+                key += 1
             }
+            return arr
+        } else {
+            object := json.Object{}
+            itr := LuaRuntime.PushTableItr(L, idx)
+            for {
+                if ! LuaRuntime.TableItrNext(L, itr) {
+                    break
+                }
+                if lua.type(L, -2) != lua.TSTRING {
+                    continue
+                }
+                key := lua.tostring(L, -2)
+                value := LuaToJson(L, -1)
+                if value != nil {
+                    object[string(key)] = value
+                }
+            }
+            return object
+        }
 
-		case lua.TBOOLEAN:
-			return bool(lua.toboolean(L, idx))
+    case lua.TBOOLEAN:
+        return bool(lua.toboolean(L, idx))
 
-		case lua.TSTRING:
-			return string(lua.tostring(L, idx))
+    case lua.TSTRING:
+        return string(lua.tostring(L, idx))
 
-		case lua.TNUMBER:
-			num := f64(lua.tonumber(L, idx))
-            int_part, frac_part := math.modf(num)
-			if frac_part == 0.0 {
-				return i64(int_part)
-			} else{
-				return f64(num)
-			}
+    case lua.TNUMBER:
+        num := f64(lua.tonumber(L, idx))
+        int_part, frac_part := math.modf(num)
+        if frac_part == 0.0 {
+            return i64(int_part)
+        } else{
+            return f64(num)
+        }
 	}
     return nil
 }

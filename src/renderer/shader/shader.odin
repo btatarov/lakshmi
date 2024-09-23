@@ -21,12 +21,12 @@ Init :: proc(type: ShaderType) -> (shader: Shader) {
     ok : bool
     vertex_shader, fragment_shader : string
     switch type {
-        case .Sprite:
-            vertex_shader = string(#load("glsl/sprite/vertex.glsl"))
-            fragment_shader = string(#load("glsl/sprite/fragment.glsl"))
-        case .Text:
-            vertex_shader = string(#load("glsl/text/vertex.glsl"))
-            fragment_shader = string(#load("glsl/text/fragment.glsl"))
+    case .Sprite:
+        vertex_shader = string(#load("glsl/sprite/vertex.glsl"))
+        fragment_shader = string(#load("glsl/sprite/fragment.glsl"))
+    case .Text:
+        vertex_shader = string(#load("glsl/text/vertex.glsl"))
+        fragment_shader = string(#load("glsl/text/fragment.glsl"))
     }
     shader.program, ok = gl.load_shaders_source(vertex_shader, fragment_shader)
     assert(ok, "Failed to load and compile shaders.")
