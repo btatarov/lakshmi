@@ -101,6 +101,7 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "add",            _add },
         { "clear",          _clear },
+        { "getSpriteCount", _getSpriteCount },
         { "setClearColor",  _setClearColor},
         { nil, nil },
     }
@@ -128,6 +129,15 @@ _clear :: proc "c" (L: ^lua.State) -> i32 {
     renderer.layer_list = make([dynamic]^Layer.Layer)
 
     return 0
+}
+
+_getSpriteCount :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    count := Sprite.GetSpriteCount()
+    lua.pushinteger(L, lua.Integer(count))
+
+    return 1
 }
 
 _setClearColor :: proc "c" (L: ^lua.State) -> i32 {

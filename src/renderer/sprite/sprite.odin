@@ -15,6 +15,8 @@ import IndexBuffer "../buffers/index"
 import VertexBuffer "../buffers/vertex"
 import Texture "../texture"
 
+@private sprite_count: u32
+
 Sprite :: struct {
     width:          u32,
     height:         u32,
@@ -111,6 +113,8 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.set_visible  = sprite_set_visible
     img.render       = sprite_render
     img.update_quad  = sprite_update_quad
+
+    sprite_count += 1
 }
 
 Destroy :: proc(img: ^Sprite) {
@@ -120,6 +124,8 @@ Destroy :: proc(img: ^Sprite) {
     VertexBuffer.Destroy(&img.vertex_buffer)
     VertexArray.Destroy(&img.vertex_array)
     IndexBuffer.Destroy(&img.index_buffer)
+
+    sprite_count -= 1
 }
 
 LuaBind :: proc(L: ^lua.State) {
@@ -148,6 +154,10 @@ LuaBind :: proc(L: ^lua.State) {
 
 LuaUnbind :: proc(L: ^lua.State) {
     // EMPTY
+}
+
+GetSpriteCount :: proc() -> u32 {
+    return sprite_count
 }
 
 sprite_get_color :: proc(img: ^Sprite) -> linalg.Vector4f32 {

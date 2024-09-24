@@ -22,6 +22,7 @@ List of available functions:
 
 * LakshmiRenderer.add(layer)
 * LakshmiRenderer.clear()
+* LakshmiRenderer.getSpriteCount()
 * LakshmiRenderer.setClearColor(r, g, b, a)
 
 ### Camera
