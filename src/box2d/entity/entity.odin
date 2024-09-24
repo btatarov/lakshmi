@@ -98,6 +98,10 @@ LuaUnbind :: proc(L: ^lua.State) {
     // Empty
 }
 
+GetEntityCount :: proc() -> u32 {
+    return u32(len(entities))
+}
+
 SetWorldRef :: proc(id: b2.WorldId, entities_ref: ^map[b2.ShapeId]^Entity) {
     world_id = id
     entities = entities_ref

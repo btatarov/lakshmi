@@ -54,6 +54,7 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "init",               _init },
         { "destroy",            _destroy },
+        { "getBodyCount",       _getBodyCount },
         { "setGravity",         _setGravity },
         { "setUnitsPerMeter",   _setUnitsPerMeter },
         { "setUpdateSteps",     _setUpdateSteps },
@@ -130,6 +131,15 @@ _destroy :: proc "c" (L: ^lua.State) -> i32 {
     Destroy()
 
     return 0
+}
+
+_getBodyCount :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    count := Entity.GetEntityCount()
+    lua.pushinteger(L, lua.Integer(count))
+
+    return 1
 }
 
 _setGravity :: proc "c" (L: ^lua.State) -> i32 {
