@@ -120,6 +120,10 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
 }
 
 Destroy :: proc(img: ^Sprite) {
+    if img.is_gone {
+        return
+    }
+
     log.debugf("LakshmiSprite: Destroy\n")
 
     Texture.Destroy(&img.texture)

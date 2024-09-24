@@ -125,6 +125,10 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
 }
 
 Destroy :: proc(text: ^Text) {
+    if text.is_gone {
+        return
+    }
+
     log.debugf("LakshmiText: Destroy\n")
 
     for &sprite in text.sprites {
