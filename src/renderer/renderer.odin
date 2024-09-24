@@ -26,6 +26,7 @@ Renderer :: struct {
 }
 
 @private renderer: Renderer
+@private draw_count: u32
 
 Init :: proc(width, height : i32) {
     gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -56,6 +57,10 @@ Destroy :: proc() {
     delete(renderer.layer_list)
 }
 
+GetDrawCount :: proc() -> u32 {
+    return draw_count
+}
+
 RefreshViewport :: proc(width, height : i32) {
     gl.Viewport(0, 0, width, height)
 
@@ -68,6 +73,8 @@ RefreshViewport :: proc(width, height : i32) {
 }
 
 Render :: proc() {
+    draw_count = 0
+
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     for layer in renderer.layer_list {
@@ -84,6 +91,7 @@ Render :: proc() {
                     shader->apply_projection(renderer.camera->get_vp_matrix())
 
                     renderable.data.(^Sprite.Sprite)->render(renderer.width, renderer.height, renderer.ratio)
+                    draw_count += 1  // TODO: in the future we should render in batches
                 }
 
             case .Text:
@@ -94,6 +102,7 @@ Render :: proc() {
 
                     for &sprite in renderable.data.(^Text.Text).sprites {
                         sprite->render(renderer.width, renderer.height, renderer.ratio)
+                        draw_count += 1  // TODO: in the future we should render in batches
                     }
                 }
             }

@@ -87,6 +87,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "clearLoopCallback",   _clearLoopCallback },
         { "clearResizeCallback", _clearResizeCallback },
         { "getDeltaTime",        _getDeltaTime },
+        { "getDrawCount",        _getDrawCount },
         { "setLoopCallback",     _setLoopCallback },
         { "setResizeCallback",   _setResizeCallback },
         { "setTargetFPS",        _setTargetFPS },
@@ -242,6 +243,15 @@ _getDeltaTime :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     lua.pushnumber(L, lua.Number(delta_time))
+
+    return 1
+}
+
+_getDrawCount :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    count := Renderer.GetDrawCount()
+    lua.pushinteger(L, lua.Integer(count))
 
     return 1
 }

@@ -12,6 +12,7 @@ List of available functions:
 * LakshmiWindow.clearLoopCallback()
 * LakshmiWindow.clearResizeCallback()
 * LakshmiWindow.getDeltaTime()
+* LakshmiWindow.getDrawCount()
 * LakshmiWindow.setLoopCallback(callback)
 * LakshmiWindow.setResizeCallback(callback)
 * LakshmiWindow.setTargetFPS(fps)
