@@ -35,6 +35,8 @@ Sprite :: struct {
     indices:        [2 * 3]u32,
     is_dirty:       bool,
 
+    is_gone:        bool,
+
     index_buffer:   IndexBuffer.IndexBuffer,
     vertex_array:   VertexArray.VertexArray,
     vertex_buffer:  VertexBuffer.VertexBuffer,
@@ -125,6 +127,7 @@ Destroy :: proc(img: ^Sprite) {
     VertexArray.Destroy(&img.vertex_array)
     IndexBuffer.Destroy(&img.index_buffer)
 
+    img.is_gone = true
     sprite_count -= 1
 }
 

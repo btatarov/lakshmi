@@ -21,6 +21,8 @@ Text :: struct {
     str:      string,
     sprites:  [dynamic]Sprite.Sprite,
 
+    is_gone:  bool,
+
     get_position: proc(text: ^Text) -> (f32, f32),
     set_position: proc(text: ^Text, x, y: f32),
     set_visible:  proc(text: ^Text, visible: bool),
@@ -128,6 +130,9 @@ Destroy :: proc(text: ^Text) {
     for &sprite in text.sprites {
         Sprite.Destroy(&sprite)
     }
+    delete(text.sprites)
+
+    text.is_gone = true
 }
 
 LuaBind :: proc(L: ^lua.State) {

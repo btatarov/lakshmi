@@ -78,19 +78,23 @@ Render :: proc() {
         for renderable in layer.renderables {
             switch renderable.type {
             case .Sprite:
-                shader := renderer.shaders["sprite"]
-                shader->bind()
-                shader->apply_projection(renderer.camera->get_vp_matrix())
+                if ! renderable.data.(^Sprite.Sprite).is_gone {
+                    shader := renderer.shaders["sprite"]
+                    shader->bind()
+                    shader->apply_projection(renderer.camera->get_vp_matrix())
 
-            renderable.data.(^Sprite.Sprite)->render(renderer.width, renderer.height, renderer.ratio)
+                    renderable.data.(^Sprite.Sprite)->render(renderer.width, renderer.height, renderer.ratio)
+                }
 
             case .Text:
-                shader := renderer.shaders["text"]
-                shader->bind()
-                shader->apply_projection(renderer.camera->get_vp_matrix())
+                if ! renderable.data.(^Text.Text).is_gone {
+                    shader := renderer.shaders["text"]
+                    shader->bind()
+                    shader->apply_projection(renderer.camera->get_vp_matrix())
 
-                for &sprite in renderable.data.(^Text.Text).sprites {
-                    sprite->render(renderer.width, renderer.height, renderer.ratio)
+                    for &sprite in renderable.data.(^Text.Text).sprites {
+                        sprite->render(renderer.width, renderer.height, renderer.ratio)
+                    }
                 }
             }
         }
