@@ -81,5 +81,5 @@ main :: proc() {
     LuaRuntime.Run(L, os.args[1:])
     defer LuaRuntime.Destroy(L)
 
-    Window.MainLoop()  // TODO: call on window open
+    Window.MainLoop()
 }
