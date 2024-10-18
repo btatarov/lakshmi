@@ -12,6 +12,7 @@ import Text "../text"
 
 Layer :: struct {
     visible:     bool,
+    is_gone:     bool,
     renderables: [dynamic]Renderable,
 
     set_visible: proc(layer: ^Layer, visible: bool),
@@ -35,6 +36,7 @@ Init :: proc(layer: ^Layer) {
     log.debugf("LakshmiLayer: Init\n")
 
     layer.visible = true
+    layer.is_gone = false
     layer.renderables = make([dynamic]Renderable)
 
     layer.set_visible = layer_set_visible
@@ -42,6 +44,8 @@ Init :: proc(layer: ^Layer) {
 
 Destroy :: proc(layer: ^Layer) {
     log.debugf("LakshmiLayer: Destroy\n")
+
+    layer.is_gone = true
 
     delete(layer.renderables)
 }

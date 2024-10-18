@@ -78,7 +78,7 @@ Render :: proc() {
     gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
     for layer in renderer.layer_list {
-        if ! layer.visible {
+        if ! layer.visible || layer.is_gone {
             continue
         }
 
