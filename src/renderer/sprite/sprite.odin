@@ -91,6 +91,7 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     }
 
     img.is_dirty = true
+    img.is_gone = false
 
     img.vertex_buffer = VertexBuffer.Init(4 * 9 * size_of(f32))
     img.vertex_array = VertexArray.Init()
