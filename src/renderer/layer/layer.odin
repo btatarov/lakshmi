@@ -7,29 +7,21 @@ import lua "vendor:lua/5.4"
 import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
+import Renderable "../renderable"
 import Sprite "../sprite"
 import Text "../text"
+
+Renderable_Union :: union {
+    ^Sprite.Sprite,
+    ^Text.Text,
+}
 
 Layer :: struct {
     visible:     bool,
     is_gone:     bool,
-    renderables: [dynamic]Renderable,
+    renderables: [dynamic]Renderable_Union,
 
     set_visible: proc(layer: ^Layer, visible: bool),
-}
-
-// TODO: in the future this should be as a separate module
-RenderableType :: enum {
-    Sprite,
-    Text,
-}
-
-Renderable :: struct {
-    data: union {
-        ^Sprite.Sprite,
-        ^Text.Text,
-    },
-    type: RenderableType,
 }
 
 Init :: proc(layer: ^Layer) {
@@ -37,7 +29,7 @@ Init :: proc(layer: ^Layer) {
 
     layer.visible = true
     layer.is_gone = false
-    layer.renderables = make([dynamic]Renderable)
+    layer.renderables = make([dynamic]Renderable_Union)
 
     layer.set_visible = layer_set_visible
 }
@@ -59,13 +51,7 @@ LuaBind :: proc(L: ^lua.State) {
         { nil, nil },
     }
 
-    constants: map[string]u32 = {
-        "RENDERABLE_TYPE_SPRITE" = u32(RenderableType.Sprite),
-        "RENDERABLE_TYPE_TEXT"   = u32(RenderableType.Text),
-    }
-    defer delete(constants)
-
-    LuaRuntime.BindClass(L, "LakshmiLayer", &reg_table, &constants, __gc)
+    LuaRuntime.BindClass(L, "LakshmiLayer", &reg_table, __gc)
 }
 
 LuaUnbind :: proc(L: ^lua.State) {
@@ -90,24 +76,18 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
 _add :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
-    layer  := (^Layer)(lua.touserdata(L, 1))
-    type   := RenderableType((lua.tonumber(L, 3)))
+    layer      := (^Layer)(lua.touserdata(L, 1))
+    renderable := (^Renderable.Renderable)((lua.touserdata(L, 2)))
 
-    // TODO: in the future these should have some type of inheritance instead
-    switch type {
-    case RenderableType.Sprite:
-        renderable: Renderable = {
-            data = (^Sprite.Sprite)(lua.touserdata(L, 2)),
-            type = .Sprite,
-        }
-        append(&layer.renderables, renderable)
+    switch renderable.renderable_type {
+    case .Sprite:
+        sprite := (^Sprite.Sprite)((lua.touserdata(L, 2)))
+        sprite.id = len(layer.renderables)
+        append(&layer.renderables, sprite)
 
-    case RenderableType.Text:
-        renderable: Renderable = {
-            data = (^Text.Text)(lua.touserdata(L, 2)),
-            type = .Text,
-        }
-        append(&layer.renderables, renderable)
+    case .Text:
+        text := (^Text.Text)((lua.touserdata(L, 2)))
+        append(&layer.renderables, text)
     }
 
     return 0
@@ -118,7 +98,7 @@ _clear :: proc "c" (L: ^lua.State) -> i32 {
 
     layer := (^Layer)(lua.touserdata(L, 1))
     delete(layer.renderables)
-    layer.renderables = make([dynamic]Renderable)
+    layer.renderables = make([dynamic]Renderable_Union)
 
     return 0
 }

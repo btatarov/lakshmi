@@ -13,71 +13,77 @@ import LuaRuntime "../../lua"
 import VertexArray "../buffers/array"
 import IndexBuffer "../buffers/index"
 import VertexBuffer "../buffers/vertex"
+import Renderable "../renderable"
 import Texture "../texture"
 
 @private sprite_count: u32
 
 Sprite :: struct {
-    width:          u32,
-    height:         u32,
-    position:       linalg.Vector3f32,
-    scale:          linalg.Vector3f32,
-    pivot:          linalg.Vector3f32,
-    rotation:       f32,
-    visible:        bool,
+    using renderable: Renderable.Renderable,
 
-    texture:        ^Texture.Texture,
-    color:          linalg.Vector4f32,
-    uv0:            linalg.Vector2f32,
-    uv1:            linalg.Vector2f32,
+    width:            u32,
+    height:           u32,
+    position:         linalg.Vector3f32,
+    scale:            linalg.Vector3f32,
+    pivot:            linalg.Vector3f32,
+    rotation:         f32,
+    visible:          bool,
 
-    quad:           [4 * 9]f32,
-    indices:        [2 * 3]u32,
-    is_dirty:       bool,
+    texture:          ^Texture.Texture,
+    color:            linalg.Vector4f32,
+    uv0:              linalg.Vector2f32,
+    uv1:              linalg.Vector2f32,
 
-    is_gone:        bool,
+    quad:             [4 * 9]f32,
+    indices:          [2 * 3]u32,
+    is_dirty:         bool,
 
-    index_buffer:   IndexBuffer.IndexBuffer,
-    vertex_array:   VertexArray.VertexArray,
-    vertex_buffer:  VertexBuffer.VertexBuffer,
+    is_gone:          bool,
+    id:               int,
 
-    get_color:      proc(img: ^Sprite) -> linalg.Vector4f32,
-    get_pivot:      proc(img: ^Sprite) -> (f32, f32),
-    get_position:   proc(img: ^Sprite) -> (f32, f32),
-    get_rotation:   proc(img: ^Sprite) -> f32,
-    get_scale:      proc(img: ^Sprite) -> (f32, f32),
-    get_size:       proc(img: ^Sprite) -> (u32, u32),
-    get_uv:         proc(img: ^Sprite) -> (f32, f32, f32, f32),
-    is_visible:     proc(img: ^Sprite) -> bool,
-    set_color:      proc(img: ^Sprite, color: linalg.Vector4f32),
-    set_pivot:      proc(img: ^Sprite, x, y: f32),
-    set_position:   proc(img: ^Sprite, x, y: f32),
-    set_rotation:   proc(img: ^Sprite, angle: f32),
-    set_scale:      proc(img: ^Sprite, x, y: f32),
-    set_size:       proc(img: ^Sprite, width, height: u32),
-    set_uv:         proc(img: ^Sprite, u, v, w, h: f32),
-    set_visible:    proc(img: ^Sprite, visible: bool),
-    render:         proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
-    update_quad:    proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
+    index_buffer:     IndexBuffer.IndexBuffer,
+    vertex_array:     VertexArray.VertexArray,
+    vertex_buffer:    VertexBuffer.VertexBuffer,
+
+    get_color:        proc(sprite: ^Sprite) -> linalg.Vector4f32,
+    get_pivot:        proc(sprite: ^Sprite) -> (f32, f32),
+    get_position:     proc(sprite: ^Sprite) -> (f32, f32),
+    get_rotation:     proc(sprite: ^Sprite) -> f32,
+    get_scale:        proc(sprite: ^Sprite) -> (f32, f32),
+    get_size:         proc(sprite: ^Sprite) -> (u32, u32),
+    get_uv:           proc(sprite: ^Sprite) -> (f32, f32, f32, f32),
+    is_visible:       proc(sprite: ^Sprite) -> bool,
+    set_color:        proc(sprite: ^Sprite, color: linalg.Vector4f32),
+    set_pivot:        proc(sprite: ^Sprite, x, y: f32),
+    set_position:     proc(sprite: ^Sprite, x, y: f32),
+    set_rotation:     proc(sprite: ^Sprite, angle: f32),
+    set_scale:        proc(sprite: ^Sprite, x, y: f32),
+    set_size:         proc(sprite: ^Sprite, width, height: u32),
+    set_uv:           proc(sprite: ^Sprite, u, v, w, h: f32),
+    set_visible:      proc(sprite: ^Sprite, visible: bool),
+    render:           proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
+    update_quad:      proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32),
 }
 
-Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
+Init :: proc(sprite: ^Sprite, texture: ^Texture.Texture) {
     log.debugf("LakshmiSprite: Init\n")
 
-    img.position = {0, 0, 0}
-    img.scale    = 1
-    img.pivot    = {0, 0, 0}
-    img.rotation = 0
-    img.visible  = true
+    sprite.renderable_type = .Sprite
 
-    img.texture  = texture
-    img.color    = {1, 1, 1, 1}
-    img.uv0      = {0, 0}
-    img.uv1      = {1, 1}
+    sprite.position = {0, 0, 0}
+    sprite.scale    = 1
+    sprite.pivot    = {0, 0, 0}
+    sprite.rotation = 0
+    sprite.visible  = true
 
-    img.width, img.height = u32(img.texture.width), u32(img.texture.height)
+    sprite.texture  = texture
+    sprite.color    = {1, 1, 1, 1}
+    sprite.uv0      = {0, 0}
+    sprite.uv1      = {1, 1}
 
-    img.quad = {
+    sprite.width, sprite.height = u32(sprite.texture.width), u32(sprite.texture.height)
+
+    sprite.quad = {
         // positions        // colors               // uv coords
         -0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 0.0,  // top left
          0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     1.0, 0.0,  // top right
@@ -85,54 +91,54 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
         -0.5, -0.5, 0.0,    1.0, 1.0, 1.0, 1.0,     0.0, 1.0,  // bottom left
     }
 
-    img.indices = {
+    sprite.indices = {
         0, 1, 3,
         1, 2, 3,
     }
 
-    img.is_dirty = true
-    img.is_gone = false
+    sprite.is_dirty = true
+    sprite.is_gone = false
 
-    img.vertex_buffer = VertexBuffer.Init(4 * 9 * size_of(f32))
-    img.vertex_array = VertexArray.Init()
-    img.index_buffer = IndexBuffer.Init(len(img.indices))
-    img.index_buffer->add(img.indices[:], len(img.indices))
+    sprite.vertex_buffer = VertexBuffer.Init(4 * 9 * size_of(f32))
+    sprite.vertex_array = VertexArray.Init()
+    sprite.index_buffer = IndexBuffer.Init(len(sprite.indices))
+    sprite.index_buffer->add(sprite.indices[:], len(sprite.indices))
 
-    img.get_color    = sprite_get_color
-    img.get_pivot    = sprite_get_pivot
-    img.get_position = sprite_get_position
-    img.get_rotation = sprite_get_rotation
-    img.get_scale    = sprite_get_scale
-    img.get_size     = sprite_get_size
-    img.get_uv       = sprite_get_uv
-    img.is_visible   = sprite_is_visible
-    img.set_color    = sprite_set_color
-    img.set_pivot    = sprite_set_pivot
-    img.set_position = sprite_set_position
-    img.set_rotation = sprite_set_rotation
-    img.set_scale    = sprite_set_scale
-    img.set_size     = sprite_set_size
-    img.set_uv       = sprite_set_uv
-    img.set_visible  = sprite_set_visible
-    img.render       = sprite_render
-    img.update_quad  = sprite_update_quad
+    sprite.get_color    = sprite_get_color
+    sprite.get_pivot    = sprite_get_pivot
+    sprite.get_position = sprite_get_position
+    sprite.get_rotation = sprite_get_rotation
+    sprite.get_scale    = sprite_get_scale
+    sprite.get_size     = sprite_get_size
+    sprite.get_uv       = sprite_get_uv
+    sprite.is_visible   = sprite_is_visible
+    sprite.set_color    = sprite_set_color
+    sprite.set_pivot    = sprite_set_pivot
+    sprite.set_position = sprite_set_position
+    sprite.set_rotation = sprite_set_rotation
+    sprite.set_scale    = sprite_set_scale
+    sprite.set_size     = sprite_set_size
+    sprite.set_uv       = sprite_set_uv
+    sprite.set_visible  = sprite_set_visible
+    sprite.render       = sprite_render
+    sprite.update_quad  = sprite_update_quad
 
     sprite_count += 1
 }
 
-Destroy :: proc(img: ^Sprite) {
-    if img.is_gone {
+Destroy :: proc(sprite: ^Sprite) {
+    if sprite.is_gone {
         return
     }
 
     log.debugf("LakshmiSprite: Destroy\n")
 
-    Texture.Destroy(img.texture)
-    VertexBuffer.Destroy(&img.vertex_buffer)
-    VertexArray.Destroy(&img.vertex_array)
-    IndexBuffer.Destroy(&img.index_buffer)
+    Texture.Destroy(sprite.texture)
+    VertexBuffer.Destroy(&sprite.vertex_buffer)
+    VertexArray.Destroy(&sprite.vertex_array)
+    IndexBuffer.Destroy(&sprite.index_buffer)
 
-    img.is_gone = true
+    sprite.is_gone = true
     sprite_count -= 1
 }
 
@@ -168,122 +174,122 @@ GetSpriteCount :: proc() -> u32 {
     return sprite_count
 }
 
-sprite_get_color :: proc(img: ^Sprite) -> linalg.Vector4f32 {
-    return img.color
+sprite_get_color :: proc(sprite: ^Sprite) -> linalg.Vector4f32 {
+    return sprite.color
 }
 
-sprite_get_pivot :: proc(img: ^Sprite) -> (f32, f32) {
-    return img.pivot.x, img.pivot.y
+sprite_get_pivot :: proc(sprite: ^Sprite) -> (f32, f32) {
+    return sprite.pivot.x, sprite.pivot.y
 }
 
-sprite_get_position :: proc(img: ^Sprite) -> (f32, f32) {
-    return img.position.x, img.position.y
+sprite_get_position :: proc(sprite: ^Sprite) -> (f32, f32) {
+    return sprite.position.x, sprite.position.y
 }
 
-sprite_get_rotation :: proc(img: ^Sprite) -> f32 {
-    return img.rotation
+sprite_get_rotation :: proc(sprite: ^Sprite) -> f32 {
+    return sprite.rotation
 }
 
-sprite_get_scale :: proc(img: ^Sprite) -> (f32, f32) {
-    return img.scale.x, img.scale.y
+sprite_get_scale :: proc(sprite: ^Sprite) -> (f32, f32) {
+    return sprite.scale.x, sprite.scale.y
 }
 
-sprite_get_size :: proc(img: ^Sprite) -> (u32, u32) {
-    return img.width, img.height
+sprite_get_size :: proc(sprite: ^Sprite) -> (u32, u32) {
+    return sprite.width, sprite.height
 }
 
-sprite_get_uv :: proc(img: ^Sprite) -> (f32, f32, f32, f32) {
-    return expand_values(img.uv0), expand_values(img.uv1)
+sprite_get_uv :: proc(sprite: ^Sprite) -> (f32, f32, f32, f32) {
+    return expand_values(sprite.uv0), expand_values(sprite.uv1)
 }
 
-sprite_is_visible :: proc(img: ^Sprite) -> bool {
-    return img.visible
+sprite_is_visible :: proc(sprite: ^Sprite) -> bool {
+    return sprite.visible
 }
 
-sprite_set_color :: proc(img: ^Sprite, color: linalg.Vector4f32) {
-    img.color = color
-    img.is_dirty = true
+sprite_set_color :: proc(sprite: ^Sprite, color: linalg.Vector4f32) {
+    sprite.color = color
+    sprite.is_dirty = true
 }
-sprite_set_pivot :: proc(img: ^Sprite, x, y: f32) {
-    img.pivot = {f32(x), f32(y), 0}
-    img.is_dirty = true
-}
-
-sprite_set_position :: proc(img: ^Sprite, x, y: f32) {
-    img.position = {f32(x), f32(y), 0}
-    img.is_dirty = true
+sprite_set_pivot :: proc(sprite: ^Sprite, x, y: f32) {
+    sprite.pivot = {f32(x), f32(y), 0}
+    sprite.is_dirty = true
 }
 
-sprite_set_rotation :: proc(img: ^Sprite, angle: f32) {
-    img.rotation = angle
-    img.is_dirty = true
+sprite_set_position :: proc(sprite: ^Sprite, x, y: f32) {
+    sprite.position = {f32(x), f32(y), 0}
+    sprite.is_dirty = true
 }
 
-sprite_set_scale :: proc(img: ^Sprite, x, y: f32) {
-    img.scale = {f32(x), f32(y), 1}
-    img.is_dirty = true
+sprite_set_rotation :: proc(sprite: ^Sprite, angle: f32) {
+    sprite.rotation = angle
+    sprite.is_dirty = true
 }
 
-sprite_set_size :: proc(img: ^Sprite, width, height: u32) {
-    img.width = width
-    img.height = height
-    img.is_dirty = true
+sprite_set_scale :: proc(sprite: ^Sprite, x, y: f32) {
+    sprite.scale = {f32(x), f32(y), 1}
+    sprite.is_dirty = true
 }
 
-sprite_set_uv :: proc(img: ^Sprite, u, v, w, h: f32) {
-    img.uv0 = {u, v}
-    img.uv1 = {u + w, v + h}
-    img.is_dirty = true
+sprite_set_size :: proc(sprite: ^Sprite, width, height: u32) {
+    sprite.width = width
+    sprite.height = height
+    sprite.is_dirty = true
 }
 
-sprite_set_visible :: proc(img: ^Sprite, visible: bool) {
-    img.visible = visible
+sprite_set_uv :: proc(sprite: ^Sprite, u, v, w, h: f32) {
+    sprite.uv0 = {u, v}
+    sprite.uv1 = {u + w, v + h}
+    sprite.is_dirty = true
 }
 
-sprite_render :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
-    if ! img.visible {
+sprite_set_visible :: proc(sprite: ^Sprite, visible: bool) {
+    sprite.visible = visible
+}
+
+sprite_render :: proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
+    if ! sprite.visible {
         return
     }
 
-    if img.is_dirty {
-        img->update_quad(screen_width, screen_height, screen_ratio)
-        img.vertex_buffer.pos = 0
-        img.vertex_buffer->add(img.quad[:], size_of(img.quad))
-        img.is_dirty = false
+    if sprite.is_dirty {
+        sprite->update_quad(screen_width, screen_height, screen_ratio)
+        sprite.vertex_buffer.pos = 0
+        sprite.vertex_buffer->add(sprite.quad[:], size_of(sprite.quad))
+        sprite.is_dirty = false
     } else {
-        img.vertex_buffer->bind()
+        sprite.vertex_buffer->bind()
     }
 
-    img.vertex_array->bind()
-    img.texture->bind()
-    gl.DrawElements(gl.TRIANGLES, img.index_buffer.count, gl.UNSIGNED_INT, nil)
+    sprite.vertex_array->bind()
+    sprite.texture->bind()
+    gl.DrawElements(gl.TRIANGLES, sprite.index_buffer.count, gl.UNSIGNED_INT, nil)
 }
 
-sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
+sprite_update_quad :: proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
     pos_normalized: linalg.Vector3f32
-    pos_normalized.x = (img.position.x + f32(screen_width) * 0.5) / f32(screen_width)
+    pos_normalized.x = (sprite.position.x + f32(screen_width) * 0.5) / f32(screen_width)
     pos_normalized.x = pos_normalized.x * screen_ratio * 2 - screen_ratio
-    pos_normalized.y = (img.position.y + f32(screen_height) * 0.5) / f32(screen_height)
+    pos_normalized.y = (sprite.position.y + f32(screen_height) * 0.5) / f32(screen_height)
     pos_normalized.y = pos_normalized.y * 2 - 1
 
     piv_normalized: linalg.Vector3f32
-    piv_normalized.x = (img.pivot.x + f32(screen_width) * 0.5) / f32(screen_width)
+    piv_normalized.x = (sprite.pivot.x + f32(screen_width) * 0.5) / f32(screen_width)
     piv_normalized.x = piv_normalized.x * screen_ratio * 2 - screen_ratio
-    piv_normalized.y = (img.pivot.y + f32(screen_height) * 0.5) / f32(screen_height)
+    piv_normalized.y = (sprite.pivot.y + f32(screen_height) * 0.5) / f32(screen_height)
     piv_normalized.y = piv_normalized.y * 2 - 1
 
     size_normalized: linalg.Vector3f32
-    size_normalized.x = f32(img.width) / f32(screen_width) * screen_ratio
-    size_normalized.y = f32(img.height) / f32(screen_height)
+    size_normalized.x = f32(sprite.width) / f32(screen_width) * screen_ratio
+    size_normalized.y = f32(sprite.height) / f32(screen_height)
 
     model_matrix: linalg.Matrix4f32 = 1
 
     model_matrix *= linalg.matrix4_translate(pos_normalized)
 
-    model_matrix *= linalg.matrix4_scale(img.scale)
+    model_matrix *= linalg.matrix4_scale(sprite.scale)
 
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{piv_normalized.x, piv_normalized.y, 0})
-    model_matrix *= linalg.matrix4_rotate(math.to_radians(img.rotation), linalg.Vector3f32{0, 0, 1})
+    model_matrix *= linalg.matrix4_rotate(math.to_radians(sprite.rotation), linalg.Vector3f32{0, 0, 1})
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{-piv_normalized.x, -piv_normalized.y, 0})
 
 
@@ -293,22 +299,22 @@ sprite_update_quad :: proc(img: ^Sprite, screen_width, screen_height: i32, scree
     d := model_matrix * linalg.Vector4f32{-size_normalized.x, -size_normalized.y, 0.0, 1.0}  // bottom left
 
     // set positions
-    swizzle(img.quad, 0, 1, 2)    = a.xyz
-    swizzle(img.quad, 9, 10, 11)  = b.xyz
-    swizzle(img.quad, 18, 19, 20) = c.xyz
-    swizzle(img.quad, 27, 28, 29) = d.xyz
+    swizzle(sprite.quad, 0, 1, 2)    = a.xyz
+    swizzle(sprite.quad, 9, 10, 11)  = b.xyz
+    swizzle(sprite.quad, 18, 19, 20) = c.xyz
+    swizzle(sprite.quad, 27, 28, 29) = d.xyz
 
     // set color
-    swizzle(img.quad, 3, 4, 5, 6)     = img.color
-    swizzle(img.quad, 12, 13, 14, 15) = img.color
-    swizzle(img.quad, 21, 22, 23, 24) = img.color
-    swizzle(img.quad, 30, 31, 32, 33) = img.color
+    swizzle(sprite.quad, 3, 4, 5, 6)     = sprite.color
+    swizzle(sprite.quad, 12, 13, 14, 15) = sprite.color
+    swizzle(sprite.quad, 21, 22, 23, 24) = sprite.color
+    swizzle(sprite.quad, 30, 31, 32, 33) = sprite.color
 
     // set uv coords
-    swizzle(img.quad, 7, 8)   = {img.uv0.x, img.uv0.y}
-    swizzle(img.quad, 16, 17) = {img.uv1.x, img.uv0.y}
-    swizzle(img.quad, 25, 26) = {img.uv1.x, img.uv1.y}
-    swizzle(img.quad, 34, 35) = {img.uv0.x, img.uv1.y}
+    swizzle(sprite.quad, 7, 8)   = {sprite.uv0.x, sprite.uv0.y}
+    swizzle(sprite.quad, 16, 17) = {sprite.uv1.x, sprite.uv0.y}
+    swizzle(sprite.quad, 25, 26) = {sprite.uv1.x, sprite.uv1.y}
+    swizzle(sprite.quad, 34, 35) = {sprite.uv0.x, sprite.uv1.y}
 }
 
 _new :: proc "c" (L: ^lua.State) -> i32 {

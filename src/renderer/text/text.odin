@@ -8,6 +8,7 @@ import "core:math/linalg"
 import lua "vendor:lua/5.4"
 import stbtt "vendor:stb/truetype"
 
+import Renderable "../renderable"
 import Sprite "../sprite"
 import Texture "../texture"
 
@@ -15,17 +16,19 @@ import LakshmiContext "../../base/context"
 import LuaRuntime "../../lua"
 
 Text :: struct {
-    width:    u32,
-    height:   u32,
-    position: linalg.Vector3f32,
-    str:      string,
-    sprites:  [dynamic]Sprite.Sprite,
+    using renderable: Renderable.Renderable,
 
-    is_gone:  bool,
+    width:            u32,
+    height:           u32,
+    position:         linalg.Vector3f32,
+    str:              string,
+    sprites:          [dynamic]Sprite.Sprite,
 
-    get_position: proc(text: ^Text) -> (f32, f32),
-    set_position: proc(text: ^Text, x, y: f32),
-    set_visible:  proc(text: ^Text, visible: bool),
+    is_gone:          bool,
+
+    get_position:     proc(text: ^Text) -> (f32, f32),
+    set_position:     proc(text: ^Text, x, y: f32),
+    set_visible:      proc(text: ^Text, visible: bool),
 }
 
 GlyphCache :: struct {
@@ -43,6 +46,8 @@ GlyphCache :: struct {
 
 Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     log.debugf("LakshmiText: Init\n")
+
+    text.renderable_type = .Text
 
     text.sprites = make([dynamic]Sprite.Sprite)
     text.str = str

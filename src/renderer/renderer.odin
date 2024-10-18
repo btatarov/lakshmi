@@ -8,12 +8,13 @@ import LakshmiContext "../base/context"
 import Camera "camera"
 import Shader "shader"
 import Layer "layer"
+
 import Sprite "sprite"
 import Text "text"
 
 import LuaRuntime "../lua"
 
-BATCH_SIZE :: 1000
+BATCH_SIZE :: 1000 // TODO: in the future we should render in batches
 
 Renderer :: struct {
     width:  i32,
@@ -83,24 +84,27 @@ Render :: proc() {
         }
 
         for renderable in layer.renderables {
-            switch renderable.type {
-            case .Sprite:
-                if ! renderable.data.(^Sprite.Sprite).is_gone {
+            renderable_union := (Layer.Renderable_Union)(renderable)
+            switch renderable_type in renderable_union {
+            case ^Sprite.Sprite:
+                sprite := renderable_union.(^Sprite.Sprite)
+                if ! sprite.is_gone {
                     shader := renderer.shaders["sprite"]
                     shader->bind()
                     shader->apply_projection(renderer.camera->get_vp_matrix())
 
-                    renderable.data.(^Sprite.Sprite)->render(renderer.width, renderer.height, renderer.ratio)
+                    sprite->render(renderer.width, renderer.height, renderer.ratio)
                     draw_count += 1  // TODO: in the future we should render in batches
                 }
 
-            case .Text:
-                if ! renderable.data.(^Text.Text).is_gone {
+            case ^Text.Text:
+                text := renderable_union.(^Text.Text)
+                if ! text.is_gone {
                     shader := renderer.shaders["text"]
                     shader->bind()
                     shader->apply_projection(renderer.camera->get_vp_matrix())
 
-                    for &sprite in renderable.data.(^Text.Text).sprites {
+                    for &sprite in text.sprites {
                         sprite->render(renderer.width, renderer.height, renderer.ratio)
                         draw_count += 1  // TODO: in the future we should render in batches
                     }

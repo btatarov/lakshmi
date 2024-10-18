@@ -34,7 +34,7 @@ List of available functions:
 ### Layer
 
 * LakshmiLayer.new()
-* LakshmiLayer.add(renderable, type)
+* LakshmiLayer.add(renderable)
 * LakshmiLayer.clear()
 * LakshmiLayer.setVisible(visible)
 
