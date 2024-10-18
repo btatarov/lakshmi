@@ -97,7 +97,7 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
         texture := Texture.Init(identifier, bitmap, width, height, 1)
 
         sprite: Sprite.Sprite
-        Sprite.Init(&sprite, &texture)
+        Sprite.Init(&sprite, texture)
         sprite->set_position(x_pos, y_pos)
         append(&text.sprites, sprite)
 

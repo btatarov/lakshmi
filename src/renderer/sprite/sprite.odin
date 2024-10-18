@@ -26,7 +26,7 @@ Sprite :: struct {
     rotation:       f32,
     visible:        bool,
 
-    texture:        Texture.Texture,
+    texture:        ^Texture.Texture,
     color:          linalg.Vector4f32,
     uv0:            linalg.Vector2f32,
     uv1:            linalg.Vector2f32,
@@ -70,7 +70,7 @@ Init :: proc(img: ^Sprite, texture: ^Texture.Texture) {
     img.rotation = 0
     img.visible  = true
 
-    img.texture  = texture^
+    img.texture  = texture
     img.color    = {1, 1, 1, 1}
     img.uv0      = {0, 0}
     img.uv1      = {1, 1}
@@ -126,7 +126,7 @@ Destroy :: proc(img: ^Sprite) {
 
     log.debugf("LakshmiSprite: Destroy\n")
 
-    Texture.Destroy(&img.texture)
+    Texture.Destroy(img.texture)
     VertexBuffer.Destroy(&img.vertex_buffer)
     VertexArray.Destroy(&img.vertex_array)
     IndexBuffer.Destroy(&img.index_buffer)
@@ -317,7 +317,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     path := lua.L_checkstring(L, 1)
 
     texture := Texture.Init(string(path))
-    Init(sprite, &texture)
+    Init(sprite, texture)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
 

@@ -28,34 +28,44 @@ TextureCache :: struct {
 
 Init :: proc { InitWithPath, InitWithData }
 
-InitWithPath :: proc(path: string) -> Texture {
-    tex := texture_cache.textures[path]
-    if tex.identifier == path && tex.id != 0 && tex.ref_count > 0 {
+InitWithPath :: proc(path: string) -> ^Texture {
+    tex: ^Texture
+
+    if path in texture_cache.textures {
+        tex = &texture_cache.textures[path]
         tex.ref_count += 1
         return tex
     }
 
+    texture_cache.textures[path] = Texture{}
+
+    tex = &texture_cache.textures[path]
     data := stbi.load(strings.clone_to_cstring(path, context.temp_allocator), &tex.width, &tex.height, &tex.channels, 0)
     assert(data != nil, fmt.tprintf("Failed to load texture: %s", path))
     defer stbi.image_free(data)
 
-    InitInternal(&tex, path, data)
+    InitInternal(tex, path, data)
 
     return tex
 }
 
-InitWithData :: proc(identifier: string, data: [^]byte, width, height, channels: i32) -> Texture {
-    tex := texture_cache.textures[identifier]
-    if tex.identifier == identifier && tex.id != 0 && tex.ref_count > 0 {
+InitWithData :: proc(identifier: string, data: [^]byte, width, height, channels: i32) -> ^Texture {
+    tex: ^Texture
+
+    if identifier in texture_cache.textures {
+        tex = &texture_cache.textures[identifier]
         tex.ref_count += 1
         return tex
     }
 
+    texture_cache.textures[identifier] = Texture{}
+
+    tex = &texture_cache.textures[identifier]
     tex.width    = width
     tex.height   = height
     tex.channels = channels
 
-    InitInternal(&tex, identifier, data)
+    InitInternal(tex, identifier, data)
 
     return tex
 }
@@ -100,6 +110,10 @@ InitInternal :: proc(tex: ^Texture, identifier: string, data: rawptr) {
 }
 
 Destroy :: proc(tex: ^Texture) {
+    if tex.identifier not_in texture_cache.textures {
+        return
+    }
+
     tex.ref_count -= 1
     if tex.ref_count == 0 {
         delete_key(&texture_cache.textures, tex.identifier)
