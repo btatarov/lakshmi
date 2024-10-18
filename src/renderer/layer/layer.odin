@@ -82,7 +82,6 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
     switch renderable.renderable_type {
     case .Sprite:
         sprite := (^Sprite.Sprite)((lua.touserdata(L, 2)))
-        sprite.id = len(layer.renderables)
         append(&layer.renderables, sprite)
 
     case .Text:

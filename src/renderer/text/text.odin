@@ -64,7 +64,7 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     x_first, x_total: f32
     height_total: u32
     for char, i in str {
-        identifier := fmt.tprintf("%s__%d__%r", font_path, size, char)
+        identifier := fmt.aprintf("%s__%d__%r", font_path, size, char)
 
         cache: GlyphCache
         bitmap: [^]byte

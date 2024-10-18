@@ -19,12 +19,12 @@ Texture :: struct {
     unbind: proc(tex: ^Texture),
 }
 
-TextureCache :: struct {
+Texture_Cache :: struct {
     textures:       map[string]Texture,
     bound_texture:  u32,
 }
 
-@private texture_cache: TextureCache
+@private texture_cache: Texture_Cache
 
 Init :: proc { InitWithPath, InitWithData }
 
@@ -119,6 +119,10 @@ Destroy :: proc(tex: ^Texture) {
         delete_key(&texture_cache.textures, tex.identifier)
         gl.DeleteTextures(1, &tex.id)
     }
+}
+
+GetTexture :: proc(identifier: string) -> ^Texture {
+    return &texture_cache.textures[identifier]
 }
 
 texture_bind :: proc(tex: ^Texture) {

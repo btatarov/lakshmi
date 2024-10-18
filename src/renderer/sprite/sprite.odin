@@ -3,6 +3,7 @@ package renderer_sprite
 import "core:log"
 import "core:math"
 import "core:math/linalg"
+import "core:strings"
 
 import lua "vendor:lua/5.4"
 import gl "vendor:OpenGL"
@@ -29,7 +30,7 @@ Sprite :: struct {
     rotation:         f32,
     visible:          bool,
 
-    texture:          ^Texture.Texture,
+    texture_id:       string,
     color:            linalg.Vector4f32,
     uv0:              linalg.Vector2f32,
     uv1:              linalg.Vector2f32,
@@ -39,7 +40,6 @@ Sprite :: struct {
     is_dirty:         bool,
 
     is_gone:          bool,
-    id:               int,
 
     index_buffer:     IndexBuffer.IndexBuffer,
     vertex_array:     VertexArray.VertexArray,
@@ -50,6 +50,7 @@ Sprite :: struct {
     get_position:     proc(sprite: ^Sprite) -> (f32, f32),
     get_rotation:     proc(sprite: ^Sprite) -> f32,
     get_scale:        proc(sprite: ^Sprite) -> (f32, f32),
+    get_texture:      proc(sprite: ^Sprite) -> ^Texture.Texture,
     get_size:         proc(sprite: ^Sprite) -> (u32, u32),
     get_uv:           proc(sprite: ^Sprite) -> (f32, f32, f32, f32),
     is_visible:       proc(sprite: ^Sprite) -> bool,
@@ -76,12 +77,13 @@ Init :: proc(sprite: ^Sprite, texture: ^Texture.Texture) {
     sprite.rotation = 0
     sprite.visible  = true
 
-    sprite.texture  = texture
-    sprite.color    = {1, 1, 1, 1}
-    sprite.uv0      = {0, 0}
-    sprite.uv1      = {1, 1}
+    sprite.texture_id = texture.identifier
 
-    sprite.width, sprite.height = u32(sprite.texture.width), u32(sprite.texture.height)
+    sprite.color = {1, 1, 1, 1}
+    sprite.uv0   = {0, 0}
+    sprite.uv1   = {1, 1}
+
+    sprite.width, sprite.height = u32(texture.width), u32(texture.height)
 
     sprite.quad = {
         // positions        // colors               // uv coords
@@ -110,6 +112,7 @@ Init :: proc(sprite: ^Sprite, texture: ^Texture.Texture) {
     sprite.get_rotation = sprite_get_rotation
     sprite.get_scale    = sprite_get_scale
     sprite.get_size     = sprite_get_size
+    sprite.get_texture  = sprite_get_texture
     sprite.get_uv       = sprite_get_uv
     sprite.is_visible   = sprite_is_visible
     sprite.set_color    = sprite_set_color
@@ -133,7 +136,7 @@ Destroy :: proc(sprite: ^Sprite) {
 
     log.debugf("LakshmiSprite: Destroy\n")
 
-    Texture.Destroy(sprite.texture)
+    Texture.Destroy(sprite->get_texture())
     VertexBuffer.Destroy(&sprite.vertex_buffer)
     VertexArray.Destroy(&sprite.vertex_array)
     IndexBuffer.Destroy(&sprite.index_buffer)
@@ -196,6 +199,10 @@ sprite_get_scale :: proc(sprite: ^Sprite) -> (f32, f32) {
 
 sprite_get_size :: proc(sprite: ^Sprite) -> (u32, u32) {
     return sprite.width, sprite.height
+}
+
+sprite_get_texture :: proc(sprite: ^Sprite) -> ^Texture.Texture {
+    return Texture.GetTexture(sprite.texture_id)
 }
 
 sprite_get_uv :: proc(sprite: ^Sprite) -> (f32, f32, f32, f32) {
@@ -261,7 +268,7 @@ sprite_render :: proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_
     }
 
     sprite.vertex_array->bind()
-    sprite.texture->bind()
+    sprite->get_texture()->bind()
     gl.DrawElements(gl.TRIANGLES, sprite.index_buffer.count, gl.UNSIGNED_INT, nil)
 }
 
@@ -323,7 +330,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
     path := lua.L_checkstring(L, 1)
 
-    texture := Texture.Init(string(path))
+    texture := Texture.Init(strings.clone_from_cstring((path)))
     Init(sprite, texture)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
