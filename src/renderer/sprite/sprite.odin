@@ -77,7 +77,7 @@ Init :: proc(sprite: ^Sprite, texture: ^Texture.Texture) {
     sprite.rotation = 0
     sprite.visible  = true
 
-    sprite.texture_id = texture.identifier
+    sprite.texture_id = strings.clone(texture.identifier)
 
     sprite.color = {1, 1, 1, 1}
     sprite.uv0   = {0, 0}
@@ -330,7 +330,7 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     sprite := (^Sprite)(lua.newuserdata(L, size_of(Sprite)))
     path := lua.L_checkstring(L, 1)
 
-    texture := Texture.Init(strings.clone_from_cstring((path)))
+    texture := Texture.Init(strings.clone_from_cstring(path))
     Init(sprite, texture)
 
     LuaRuntime.BindClassMetatable(L, "LakshmiSprite")
