@@ -48,7 +48,7 @@ Destroy :: proc(channel: ^Channel) {
 SetEngine :: proc(channel: ^Channel, engine: ^ma.engine) {
     channel.engine = engine
 
-    result := ma.sound_group_init(channel.engine, 0, nil, &channel.group)
+    result := ma.sound_group_init(channel.engine, {}, nil, &channel.group)
     assert(result == .SUCCESS, "Failed to initialize sound group")
 
     channel.is_active = true
@@ -99,13 +99,13 @@ _add :: proc "c" (L: ^lua.State) -> i32 {
 
     flags: ma.sound_flags
     if channel.is_streamed {
-        flags = ma.sound_flags.STREAM
+        flags = {.STREAM}
     } else {
-        flags = ma.sound_flags.DECODE
+        flags = {.DECODE}
     }
 
     channel.sounds[string(name)] = ma.sound{}
-    result := ma.sound_init_from_file(channel.engine, path, u32(flags), &channel.group, nil, &channel.sounds[string(name)])
+    result := ma.sound_init_from_file(channel.engine, path, flags, &channel.group, nil, &channel.sounds[string(name)])
     assert(result == .SUCCESS, fmt.tprintf("Failed to load sound: %s\n", name))
 
     ma.sound_set_looping(&channel.sounds[string(name)], b32(channel.is_looping))
