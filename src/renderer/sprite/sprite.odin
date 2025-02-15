@@ -53,7 +53,6 @@ Sprite :: struct {
     get_texture:      proc(sprite: ^Sprite) -> ^Texture.Texture,
     get_size:         proc(sprite: ^Sprite) -> (u32, u32),
     get_uv:           proc(sprite: ^Sprite) -> (f32, f32, f32, f32),
-    is_visible:       proc(sprite: ^Sprite) -> bool,
     set_color:        proc(sprite: ^Sprite, color: linalg.Vector4f32),
     set_pivot:        proc(sprite: ^Sprite, x, y: f32),
     set_position:     proc(sprite: ^Sprite, x, y: f32),
@@ -114,7 +113,6 @@ Init :: proc(sprite: ^Sprite, texture: ^Texture.Texture) {
     sprite.get_size     = sprite_get_size
     sprite.get_texture  = sprite_get_texture
     sprite.get_uv       = sprite_get_uv
-    sprite.is_visible   = sprite_is_visible
     sprite.set_color    = sprite_set_color
     sprite.set_pivot    = sprite_set_pivot
     sprite.set_position = sprite_set_position
@@ -207,10 +205,6 @@ sprite_get_texture :: proc(sprite: ^Sprite) -> ^Texture.Texture {
 
 sprite_get_uv :: proc(sprite: ^Sprite) -> (f32, f32, f32, f32) {
     return expand_values(sprite.uv0), expand_values(sprite.uv1)
-}
-
-sprite_is_visible :: proc(sprite: ^Sprite) -> bool {
-    return sprite.visible
 }
 
 sprite_set_color :: proc(sprite: ^Sprite, color: linalg.Vector4f32) {
@@ -425,9 +419,8 @@ _get_visible :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
     sprite := (^Sprite)(lua.touserdata(L, -1))
-    visible := sprite->is_visible()
 
-    lua.pushboolean(L, b32(visible))
+    lua.pushboolean(L, b32(sprite.visible))
 
     return 1
 }
