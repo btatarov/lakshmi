@@ -51,6 +51,7 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
 
     text.renderable_type = .Text
 
+    text.position = {0, 0, 0}
     text.visible = true
 
     text.sprites = make([dynamic]Sprite.Sprite)
