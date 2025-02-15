@@ -254,8 +254,6 @@ sprite_set_visible :: proc(sprite: ^Sprite, visible: bool) {
 }
 
 sprite_render :: proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
-    sprite->get_texture()->bind()
-
     if sprite.is_dirty {
         sprite->update_quad(screen_width, screen_height, screen_ratio)
         sprite.vertex_buffer.pos = 0
