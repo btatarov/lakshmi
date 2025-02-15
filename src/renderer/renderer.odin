@@ -14,7 +14,7 @@ import Text "text"
 
 import LuaRuntime "../lua"
 
-BATCH_SIZE :: 1000 // TODO: in the future we should render in batches
+BATCH_SIZE :: 1000  // TODO: in the future we should render in batches
 
 Renderer :: struct {
     width:  i32,
@@ -24,6 +24,9 @@ Renderer :: struct {
     camera:     ^Camera.Camera,
     shaders:    map[string]Shader.Shader,
     layer_list: [dynamic]^Layer.Layer,
+
+    cur_shader:  u32,
+    cur_texture: u32,  // TODO: when we render in batches we should use bind only when necessary
 }
 
 @private renderer: Renderer
@@ -90,8 +93,11 @@ Render :: proc() {
                 sprite := renderable_union.(^Sprite.Sprite)
                 if ! sprite.is_gone && sprite.visible {
                     shader := renderer.shaders["sprite"]
-                    shader->bind()
-                    shader->apply_projection(renderer.camera->get_vp_matrix())
+                    if renderer.cur_shader != shader.program {
+                        shader->bind()
+                        shader->apply_projection(renderer.camera->get_vp_matrix())
+                        renderer.cur_shader = shader.program
+                    }
 
                     sprite->render(renderer.width, renderer.height, renderer.ratio)
                     draw_count += 1  // TODO: in the future we should render in batches
@@ -101,8 +107,11 @@ Render :: proc() {
                 text := renderable_union.(^Text.Text)
                 if ! text.is_gone && text.visible {
                     shader := renderer.shaders["text"]
-                    shader->bind()
-                    shader->apply_projection(renderer.camera->get_vp_matrix())
+                    if renderer.cur_shader != shader.program {
+                        shader->bind()
+                        shader->apply_projection(renderer.camera->get_vp_matrix())
+                        renderer.cur_shader = shader.program
+                    }
 
                     for &sprite in text.sprites {
                         sprite->render(renderer.width, renderer.height, renderer.ratio)
