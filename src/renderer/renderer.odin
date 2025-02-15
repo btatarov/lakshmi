@@ -95,9 +95,9 @@ Render :: proc() {
                     shader := renderer.shaders["sprite"]
                     if renderer.cur_shader != shader.program {
                         shader->bind()
-                        shader->apply_projection(renderer.camera->get_vp_matrix())
                         renderer.cur_shader = shader.program
                     }
+                    shader->apply_projection(renderer.camera->get_vp_matrix())
 
                     texture := sprite->get_texture()
                     if renderer.cur_texture != texture.id {
@@ -115,9 +115,9 @@ Render :: proc() {
                     shader := renderer.shaders["text"]
                     if renderer.cur_shader != shader.program {
                         shader->bind()
-                        shader->apply_projection(renderer.camera->get_vp_matrix())
                         renderer.cur_shader = shader.program
                     }
+                    shader->apply_projection(renderer.camera->get_vp_matrix())
 
                     for &sprite in text.sprites {
                         texture := sprite->get_texture()
