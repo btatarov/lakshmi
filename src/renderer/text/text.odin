@@ -21,6 +21,8 @@ Text :: struct {
     width:            u32,
     height:           u32,
     position:         linalg.Vector3f32,
+    visible:          bool,
+
     str:              string,
     sprites:          [dynamic]Sprite.Sprite,
 
@@ -48,6 +50,8 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     log.debugf("LakshmiText: Init\n")
 
     text.renderable_type = .Text
+
+    text.visible = true
 
     text.sprites = make([dynamic]Sprite.Sprite)
     text.str = str
@@ -184,6 +188,8 @@ text_set_position :: proc(text: ^Text, x, y: f32) {
 }
 
 text_set_visible :: proc(text: ^Text, visible: bool) {
+    text.visible = visible
+
     for &sprite in text.sprites {
         sprite->set_visible(visible)
     }

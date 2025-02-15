@@ -254,9 +254,7 @@ sprite_set_visible :: proc(sprite: ^Sprite, visible: bool) {
 }
 
 sprite_render :: proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_ratio: f32) {
-    if ! sprite.visible {
-        return
-    }
+    sprite->get_texture()->bind()
 
     if sprite.is_dirty {
         sprite->update_quad(screen_width, screen_height, screen_ratio)
@@ -268,7 +266,7 @@ sprite_render :: proc(sprite: ^Sprite, screen_width, screen_height: i32, screen_
     }
 
     sprite.vertex_array->bind()
-    sprite->get_texture()->bind()
+
     gl.DrawElements(gl.TRIANGLES, sprite.index_buffer.count, gl.UNSIGNED_INT, nil)
 }
 

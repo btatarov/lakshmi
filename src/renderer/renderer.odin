@@ -88,7 +88,7 @@ Render :: proc() {
             switch renderable_type in renderable_union {
             case ^Sprite.Sprite:
                 sprite := renderable_union.(^Sprite.Sprite)
-                if ! sprite.is_gone {
+                if ! sprite.is_gone && sprite.visible {
                     shader := renderer.shaders["sprite"]
                     shader->bind()
                     shader->apply_projection(renderer.camera->get_vp_matrix())
@@ -99,7 +99,7 @@ Render :: proc() {
 
             case ^Text.Text:
                 text := renderable_union.(^Text.Text)
-                if ! text.is_gone {
+                if ! text.is_gone && text.visible {
                     shader := renderer.shaders["text"]
                     shader->bind()
                     shader->apply_projection(renderer.camera->get_vp_matrix())
