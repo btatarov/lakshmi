@@ -32,6 +32,7 @@ Text :: struct {
 
     get_color:        proc(text: ^Text) -> linalg.Vector4f32,
     get_position:     proc(text: ^Text) -> (f32, f32),
+    is_visible:       proc(text: ^Text) -> bool,
     set_color:        proc(text: ^Text, color: linalg.Vector4f32),
     set_position:     proc(text: ^Text, x, y: f32),
     set_visible:      proc(text: ^Text, visible: bool),
@@ -137,6 +138,7 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
 
     text.get_color    = text_get_color
     text.get_position = text_get_position
+    text.is_visible   = text_is_visible
     text.set_color    = text_set_color
     text.set_position = text_set_position
     text.set_visible  = text_set_visible
@@ -163,6 +165,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getColor",   _get_color },
         { "getPos",     _get_pos },
         { "setColor",   _set_color },
+        { "isVisible",  _get_visible },
         { "setPos",     _set_pos },
         { "setVisible", _set_visible },
         { nil, nil },
@@ -185,6 +188,10 @@ text_get_color :: proc(text: ^Text) -> linalg.Vector4f32 {
 
 text_get_position :: proc(text: ^Text) -> (f32, f32) {
     return text.position.x, text.position.y
+}
+
+text_is_visible :: proc(text: ^Text) -> bool {
+    return text.visible
 }
 
 text_set_color :: proc(text: ^Text, color: linalg.Vector4f32) {
@@ -245,6 +252,17 @@ _get_color :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushnumber(L, lua.Number(color.w))
 
     return 4
+}
+
+_get_visible :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    visible := text->is_visible()
+
+    lua.pushboolean(L, b32(visible))
+
+    return 1
 }
 
 _get_pos :: proc "c" (L: ^lua.State) -> i32 {
