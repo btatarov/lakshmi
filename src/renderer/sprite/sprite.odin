@@ -217,6 +217,7 @@ sprite_set_color :: proc(sprite: ^Sprite, color: linalg.Vector4f32) {
     sprite.color = color
     sprite.is_dirty = true
 }
+
 sprite_set_pivot :: proc(sprite: ^Sprite, x, y: f32) {
     sprite.pivot = {f32(x), f32(y), 0}
     sprite.is_dirty = true

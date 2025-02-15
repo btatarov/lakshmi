@@ -23,12 +23,16 @@ Text :: struct {
     position:         linalg.Vector3f32,
     visible:          bool,
 
+    color:            linalg.Vector4f32,
+
     str:              string,
     sprites:          [dynamic]Sprite.Sprite,
 
     is_gone:          bool,
 
+    get_color:        proc(text: ^Text) -> linalg.Vector4f32,
     get_position:     proc(text: ^Text) -> (f32, f32),
+    set_color:        proc(text: ^Text, color: linalg.Vector4f32),
     set_position:     proc(text: ^Text, x, y: f32),
     set_visible:      proc(text: ^Text, visible: bool),
 }
@@ -131,7 +135,9 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
         sprite->set_position(x - f32(text.width) / 2, y - f32(text.height) / 2)
     }
 
+    text.get_color    = text_get_color
     text.get_position = text_get_position
+    text.set_color    = text_set_color
     text.set_position = text_set_position
     text.set_visible  = text_set_visible
 }
@@ -154,7 +160,9 @@ Destroy :: proc(text: ^Text) {
 LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new",        _new },
+        { "getColor",   _get_color },
         { "getPos",     _get_pos },
+        { "setColor",   _set_color },
         { "setPos",     _set_pos },
         { "setVisible", _set_visible },
         { nil, nil },
@@ -171,8 +179,20 @@ LuaUnbind :: proc(L: ^lua.State) {
     delete(glyph_cache)
 }
 
+text_get_color :: proc(text: ^Text) -> linalg.Vector4f32 {
+    return text.color
+}
+
 text_get_position :: proc(text: ^Text) -> (f32, f32) {
     return text.position.x, text.position.y
+}
+
+text_set_color :: proc(text: ^Text, color: linalg.Vector4f32) {
+    text.color = color
+
+    for &sprite in text.sprites {
+        sprite->set_color(color)
+    }
 }
 
 text_set_position :: proc(text: ^Text, x, y: f32) {
@@ -213,6 +233,20 @@ _new :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
+_get_color :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    color := text->get_color()
+
+    lua.pushnumber(L, lua.Number(color.x))
+    lua.pushnumber(L, lua.Number(color.y))
+    lua.pushnumber(L, lua.Number(color.z))
+    lua.pushnumber(L, lua.Number(color.w))
+
+    return 4
+}
+
 _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -223,6 +257,21 @@ _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushnumber(L, lua.Number(y))
 
     return 2
+}
+
+_set_color :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    color := linalg.Vector4f32{
+        f32(lua.tonumber(L, 2)),
+        f32(lua.tonumber(L, 3)),
+        f32(lua.tonumber(L, 4)),
+        f32(lua.tonumber(L, 5)),
+    }
+    text->set_color(color)
+
+    return 0
 }
 
 _set_pos :: proc "c" (L: ^lua.State) -> i32 {
