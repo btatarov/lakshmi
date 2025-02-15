@@ -56,6 +56,8 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     text.sprites = make([dynamic]Sprite.Sprite)
     text.str = str
 
+    text.is_gone = false
+
     data, ok := os.read_entire_file(font_path)
     assert(ok, fmt.tprintf("LakshmiText: Failed to find font file: %s", font_path))
 

@@ -26,7 +26,7 @@ Renderer :: struct {
     layer_list: [dynamic]^Layer.Layer,
 
     cur_shader:  u32,
-    cur_texture: u32,  // TODO: when we render in batches we should use bind only when necessary
+    cur_texture: u32,
 }
 
 @private renderer: Renderer
@@ -99,6 +99,12 @@ Render :: proc() {
                         renderer.cur_shader = shader.program
                     }
 
+                    texture := sprite->get_texture()
+                    if renderer.cur_texture != texture.id {
+                        texture->bind()
+                        renderer.cur_texture = texture.id
+                    }
+
                     sprite->render(renderer.width, renderer.height, renderer.ratio)
                     draw_count += 1  // TODO: in the future we should render in batches
                 }
@@ -114,6 +120,12 @@ Render :: proc() {
                     }
 
                     for &sprite in text.sprites {
+                        texture := sprite->get_texture()
+                        if renderer.cur_texture != texture.id {
+                            texture->bind()
+                            renderer.cur_texture = texture.id
+                        }
+
                         sprite->render(renderer.width, renderer.height, renderer.ratio)
                         draw_count += 1  // TODO: in the future we should render in batches
                     }
