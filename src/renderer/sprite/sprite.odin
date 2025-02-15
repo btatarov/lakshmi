@@ -286,15 +286,11 @@ sprite_update_quad :: proc(sprite: ^Sprite, screen_width, screen_height: i32, sc
     size_normalized.y = f32(sprite.height) / f32(screen_height)
 
     model_matrix: linalg.Matrix4f32 = 1
-
     model_matrix *= linalg.matrix4_translate(pos_normalized)
-
-    model_matrix *= linalg.matrix4_scale(sprite.scale)
-
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{piv_normalized.x, piv_normalized.y, 0})
+    model_matrix *= linalg.matrix4_scale(sprite.scale)
     model_matrix *= linalg.matrix4_rotate(math.to_radians(sprite.rotation), linalg.Vector3f32{0, 0, 1})
     model_matrix *= linalg.matrix4_translate(linalg.Vector3f32{-piv_normalized.x, -piv_normalized.y, 0})
-
 
     a := model_matrix * linalg.Vector4f32{-size_normalized.x,  size_normalized.y, 0.0, 1.0}  // top left
     b := model_matrix * linalg.Vector4f32{ size_normalized.x,  size_normalized.y, 0.0, 1.0}  // top right
