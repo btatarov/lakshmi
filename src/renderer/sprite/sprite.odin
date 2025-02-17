@@ -25,8 +25,8 @@ Sprite :: struct {
     width:            u32,
     height:           u32,
     position:         linalg.Vector3f32,
-    scale:            linalg.Vector3f32,
     pivot:            linalg.Vector3f32,
+    scale:            linalg.Vector3f32,
     rotation:         f32,
     visible:          bool,
 
@@ -72,8 +72,8 @@ Init :: proc(sprite: ^Sprite, texture: ^Texture.Texture) {
     sprite.renderable_type = .Sprite
 
     sprite.position = {0, 0, 0}
-    sprite.scale    = 1
     sprite.pivot    = {0, 0, 0}
+    sprite.scale    = 1
     sprite.rotation = 0
     sprite.visible  = true
 
