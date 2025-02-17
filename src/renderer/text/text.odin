@@ -185,6 +185,7 @@ LuaBind :: proc(L: ^lua.State) {
         { "getPiv",     _get_piv },
         { "getPos",     _get_pos },
         { "getRot",     _get_rot },
+        { "getSize",    _get_size },
         { "setColor",   _set_color },
         { "isVisible",  _get_visible },
         { "setPiv",     _set_piv },
@@ -350,6 +351,17 @@ _get_rot :: proc "c" (L: ^lua.State) -> i32 {
     lua.pushnumber(L, lua.Number(angle))
 
     return 1
+}
+
+_get_size :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+
+    lua.pushnumber(L, lua.Number(text.width))
+    lua.pushnumber(L, lua.Number(text.height))
+
+    return 2
 }
 
 _set_color :: proc "c" (L: ^lua.State) -> i32 {

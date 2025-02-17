@@ -65,6 +65,7 @@ List of available functions:
 * LakshmiText.getPiv(text)
 * LakshmiText.getPos(text)
 * LakshmiText.getRot(text)
+* LakshmiText.getSize(text)
 * LakshmiText.isVisible(text)
 * LakshmiText.setColor(text, r, g, b, a)
 * LakshmiText.setPiv(text, x, y)
