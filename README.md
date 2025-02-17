@@ -64,10 +64,12 @@ List of available functions:
 * LakshmiText.getColor(text)
 * LakshmiText.getPiv(text)
 * LakshmiText.getPos(text)
+* LakshmiText.getRot(text)
 * LakshmiText.isVisible(text)
 * LakshmiText.setColor(text, r, g, b, a)
 * LakshmiText.setPiv(text, x, y)
 * LakshmiText.setPos(text, x, y)
+* LakshmiText.setRot(text, angle)
 * LakshmiText.setVisible(text, visible)
 
 ### Box2D

@@ -22,6 +22,7 @@ Text :: struct {
     height:           u32,
     pivot:            linalg.Vector3f32,
     position:         linalg.Vector3f32,
+    rotation:         f32,
     visible:          bool,
 
     color:            linalg.Vector4f32,
@@ -34,10 +35,12 @@ Text :: struct {
     get_color:        proc(text: ^Text) -> linalg.Vector4f32,
     get_pivot:        proc(text: ^Text) -> (f32, f32),
     get_position:     proc(text: ^Text) -> (f32, f32),
+    get_rotation:     proc(text: ^Text) -> f32,
     is_visible:       proc(text: ^Text) -> bool,
     set_color:        proc(text: ^Text, color: linalg.Vector4f32),
     set_pivot:        proc(text: ^Text, x, y: f32),
     set_position:     proc(text: ^Text, x, y: f32),
+    set_rotation:     proc(text: ^Text, angle: f32),
     set_visible:      proc(text: ^Text, visible: bool),
 }
 
@@ -61,6 +64,7 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
 
     text.pivot    = {0, 0, 0}
     text.position = {0, 0, 0}
+    text.rotation = 0
     text.visible  = true
 
     text.sprites = make([dynamic]Sprite.Sprite)
@@ -150,10 +154,12 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     text.get_color    = text_get_color
     text.get_pivot    = text_get_pivot
     text.get_position = text_get_position
+    text.get_rotation = text_get_rotation
     text.is_visible   = text_is_visible
     text.set_color    = text_set_color
     text.set_pivot    = text_set_pivot
     text.set_position = text_set_position
+    text.set_rotation = text_set_rotation
     text.set_visible  = text_set_visible
 }
 
@@ -178,10 +184,12 @@ LuaBind :: proc(L: ^lua.State) {
         { "getColor",   _get_color },
         { "getPiv",     _get_piv },
         { "getPos",     _get_pos },
+        { "getRot",     _get_rot },
         { "setColor",   _set_color },
         { "isVisible",  _get_visible },
         { "setPiv",     _set_piv },
         { "setPos",     _set_pos },
+        { "setRot",     _set_rot },
         { "setVisible", _set_visible },
         { nil, nil },
     }
@@ -207,6 +215,10 @@ text_get_pivot :: proc(text: ^Text) -> (f32, f32) {
 
 text_get_position :: proc(text: ^Text) -> (f32, f32) {
     return text.position.x, text.position.y
+}
+
+text_get_rotation :: proc(text: ^Text) -> f32 {
+    return text.rotation
 }
 
 text_is_visible :: proc(text: ^Text) -> bool {
@@ -246,6 +258,14 @@ text_set_position :: proc(text: ^Text, x, y: f32) {
     for &sprite in text.sprites {
         x_old, y_old := sprite->get_position()
         sprite->set_position(x_old + position_offset.x, y_old + position_offset.y)
+    }
+}
+
+text_set_rotation :: proc(text: ^Text, angle: f32) {
+    text.rotation = angle
+
+    for &sprite in text.sprites {
+        sprite->set_rotation(angle)
     }
 }
 
@@ -321,6 +341,17 @@ _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     return 2
 }
 
+_get_rot :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    angle := text->get_rotation()
+
+    lua.pushnumber(L, lua.Number(angle))
+
+    return 1
+}
+
 _set_color :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -354,6 +385,16 @@ _set_pos :: proc "c" (L: ^lua.State) -> i32 {
     x := f32(lua.tonumber(L, 2))
     y := f32(lua.tonumber(L, 3))
     text->set_position(x, y)
+
+    return 0
+}
+
+_set_rot :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    angle := f32(lua.tonumber(L, 2))
+    text->set_rotation(angle)
 
     return 0
 }
