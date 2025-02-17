@@ -20,6 +20,7 @@ Text :: struct {
 
     width:            u32,
     height:           u32,
+    pivot:            linalg.Vector3f32,
     position:         linalg.Vector3f32,
     visible:          bool,
 
@@ -31,9 +32,11 @@ Text :: struct {
     is_gone:          bool,
 
     get_color:        proc(text: ^Text) -> linalg.Vector4f32,
+    get_pivot:        proc(text: ^Text) -> (f32, f32),
     get_position:     proc(text: ^Text) -> (f32, f32),
     is_visible:       proc(text: ^Text) -> bool,
     set_color:        proc(text: ^Text, color: linalg.Vector4f32),
+    set_pivot:        proc(text: ^Text, x, y: f32),
     set_position:     proc(text: ^Text, x, y: f32),
     set_visible:      proc(text: ^Text, visible: bool),
 }
@@ -56,8 +59,9 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
 
     text.renderable_type = .Text
 
+    text.pivot    = {0, 0, 0}
     text.position = {0, 0, 0}
-    text.visible = true
+    text.visible  = true
 
     text.sprites = make([dynamic]Sprite.Sprite)
     text.str = str
@@ -130,16 +134,25 @@ Init :: proc(text: ^Text, font_path, str: string, size: f32) {
     text.height = u32(height_total)
     text.position = linalg.Vector3f32{0, 0, 0}
 
-    // position based on center origin point
+    // position and pivot based on center origin point
     for &sprite in text.sprites {
         x, y := sprite->get_position()
-        sprite->set_position(x - f32(text.width) / 2, y - f32(text.height) / 2)
+
+        x_pos := x - f32(text.width) / 2
+        y_pos := y - f32(text.height) / 2
+        sprite->set_position(x_pos, y_pos)
+
+        x_piv := 0 - x_pos
+        y_piv := 0 - y_pos
+        sprite->set_pivot(x_piv, y_piv)
     }
 
     text.get_color    = text_get_color
+    text.get_pivot    = text_get_pivot
     text.get_position = text_get_position
     text.is_visible   = text_is_visible
     text.set_color    = text_set_color
+    text.set_pivot    = text_set_pivot
     text.set_position = text_set_position
     text.set_visible  = text_set_visible
 }
@@ -163,9 +176,11 @@ LuaBind :: proc(L: ^lua.State) {
     @static reg_table: []lua.L_Reg = {
         { "new",        _new },
         { "getColor",   _get_color },
+        { "getPiv",     _get_piv },
         { "getPos",     _get_pos },
         { "setColor",   _set_color },
         { "isVisible",  _get_visible },
+        { "setPiv",     _set_piv },
         { "setPos",     _set_pos },
         { "setVisible", _set_visible },
         { nil, nil },
@@ -186,6 +201,10 @@ text_get_color :: proc(text: ^Text) -> linalg.Vector4f32 {
     return text.color
 }
 
+text_get_pivot :: proc(text: ^Text) -> (f32, f32) {
+    return text.pivot.x, text.pivot.y
+}
+
 text_get_position :: proc(text: ^Text) -> (f32, f32) {
     return text.position.x, text.position.y
 }
@@ -202,12 +221,25 @@ text_set_color :: proc(text: ^Text, color: linalg.Vector4f32) {
     }
 }
 
+text_set_pivot :: proc(text: ^Text, x, y: f32) {
+    pivot_offset := linalg.Vector2f32 {
+        x - text.pivot.x,
+        y - text.pivot.y,
+    }
+
+    text.pivot = linalg.Vector3f32{x, y, 0}
+
+    for &sprite in text.sprites {
+        x_old, y_old := sprite->get_pivot()
+        sprite->set_pivot(x_old + pivot_offset.x, y_old + pivot_offset.y)
+    }
+}
+
 text_set_position :: proc(text: ^Text, x, y: f32) {
     position_offset := linalg.Vector2f32 {
         x - text.position.x,
         y - text.position.y,
     }
-    _ = position_offset
 
     text.position = linalg.Vector3f32{x, y, 0}
 
@@ -265,6 +297,18 @@ _get_visible :: proc "c" (L: ^lua.State) -> i32 {
     return 1
 }
 
+_get_piv :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    x, y := text->get_pivot()
+
+    lua.pushnumber(L, lua.Number(x))
+    lua.pushnumber(L, lua.Number(y))
+
+    return 2
+}
+
 _get_pos :: proc "c" (L: ^lua.State) -> i32 {
     context = LakshmiContext.GetDefault()
 
@@ -288,6 +332,17 @@ _set_color :: proc "c" (L: ^lua.State) -> i32 {
         f32(lua.tonumber(L, 5)),
     }
     text->set_color(color)
+
+    return 0
+}
+
+_set_piv :: proc "c" (L: ^lua.State) -> i32 {
+    context = LakshmiContext.GetDefault()
+
+    text := (^Text)(lua.touserdata(L, 1))
+    x := f32(lua.tonumber(L, 2))
+    y := f32(lua.tonumber(L, 3))
+    text->set_pivot(x, y)
 
     return 0
 }

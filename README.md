@@ -62,9 +62,11 @@ List of available functions:
 
 * LakshmiText.new(font_path, text, size)
 * LakshmiText.getColor(text)
+* LakshmiText.getPiv(text)
 * LakshmiText.getPos(text)
 * LakshmiText.isVisible(text)
 * LakshmiText.setColor(text, r, g, b, a)
+* LakshmiText.setPiv(text, x, y)
 * LakshmiText.setPos(text, x, y)
 * LakshmiText.setVisible(text, visible)
 
